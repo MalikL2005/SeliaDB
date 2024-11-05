@@ -42,20 +42,35 @@ void close_buffer_in(InputBuffer* buffer_in){
 }
 
 
+int compare(char s1[], char s2[]){
+    return strcmp (s1, s2) == 0;
+}
+
+int handle_command(InputBuffer* buffer){
+    if (compare(buffer->buffer, "SHOWCOLUMNS")){
+        printf("Showing columns...\n");
+        //show_columns(buffer);
+    } else if (compare(buffer->buffer, "EXIT")){
+        printf("Exiting... \n");
+        return 1;
+    } else if (compare(buffer->buffer, "")){
+        return 0;
+    } else {
+        printf("Unknown command.\n");
+    }
+    return 0;
+}
+
+
 int main() {
     InputBuffer* pBuffer = newInputBuffer();
+    int end;
     
-    while (1){
+    do {
         print_prompt();
         read_input(pBuffer);
-        if (strcmp(pBuffer->buffer, "exit") == 0){
-            printf("leaving");
-            close_buffer_in(pBuffer);
-            break;
-        } else {
-            printf("unrecognized command.\n");
-        }
-    }
+        end = handle_command(pBuffer);
+    } while(end != 1);
     
     return 0;
 }
