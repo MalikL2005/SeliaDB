@@ -36,19 +36,17 @@ typedef struct {
 } database;
 
 
-void add_row (table *tb, int number_of_columns, char *values[]){
-    table_row *new_row = malloc(sizeof(table_row));
-    // append *new_row to table->rows
-}
-
 void show_tables(database *db){
     printf("\n%s\n", db->name);
     for (int i=0; i<MAX_TABLES; i++){
-        if (db->tables[i] != NULL){
-            printf("|\n|---- %s\n", db->tables[i]->name);
+        if (db->tables[i] == NULL){
+            printf("Empty table-set.\n");
+            return;
         }
+        printf("|\n|---- %s\n", db->tables[i]->name);
     }
 }
+
 
 void show_columns(table *table){
     printf("\n%s\n", table->name);
@@ -84,6 +82,23 @@ table *create_table(char *table_name, int number_of_columns, char *column_names[
 }
 
 
+int add_table_to_db(database *db, table *table){
+    for (int i=0; i<MAX_TABLES; i++){
+        if (db->tables[i] == NULL){
+            db->tables[i] = table; 
+            return 0;
+        }
+        printf("%s\n", db->tables[i]->name);
+    }
+    return 1;
+}
+
+
+void add_row (table *tb, int number_of_columns, char *values[]){
+    table_row *new_row = malloc(sizeof(table_row));
+    // append *new_row to table->rows
+}
+
 
 int main(){
     // Create tables
@@ -91,6 +106,7 @@ int main(){
     table *nt = create_table("TABLE_NAME", 3, col_names);
     table *nt2 = create_table("OTHER_NAME", 3, col_names);
     table *nt3 = create_table("YET_ANOTHER_NAME", 3, col_names);
+    table *nt4 = create_table("YET_YET_ANOTHER_NAME", 3, col_names);
     printf("%s\n", nt->name);
     printf("%s\n", (nt->columns[0]->name));
     
@@ -113,10 +129,8 @@ int main(){
     printf("%s\n", mydb->name);
     
     // Add tables to db
-    mydb->tables[0] = nt;
-    mydb->tables[1] = nt2;
-    mydb->tables[2] = nt3;
-    printf("%s\n", mydb->tables[0]->name);
+    show_tables(mydb);
+    add_table_to_db(mydb, nt4);
     show_tables(mydb);
     
     return 0;
