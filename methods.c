@@ -40,7 +40,6 @@ void show_tables(database *db){
     printf("\n%s\n", db->name);
     for (int i=0; i<MAX_TABLES; i++){
         if (db->tables[i] == NULL){
-            printf("Empty table-set.\n");
             return;
         }
         printf("|\n|---- %s\n", db->tables[i]->name);
