@@ -31,6 +31,12 @@ void add_row (table *tb, int number_of_columns, char *values[]){
     // append *new_row to table->rows
 }
 
+void show_columns(table *table){
+    printf("\n%s\n", table->name);
+    for (int i=0; i<(table->number_of_columns); i++){
+        printf("|\n|---- %s\n", table->columns[i]);
+    }
+}
 
 table *create_table(char *table_name, int number_of_columns, char *column_names[]){
     // Create new table 
@@ -70,7 +76,7 @@ int main(){
     //char ** values = {&v1, &v2, &v3};
     char *values[] = {v1, v2, v3};
     add_row(nt, nt->number_of_columns, values);
-    
+    show_columns(nt);
     
     return 0;
 }
