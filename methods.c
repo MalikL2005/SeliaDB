@@ -4,9 +4,15 @@
 #define MAX_COLUMN_NAME_LENGTH 32
 #define MAX_INDEX_NAME_LENGTH 32
 #define MAX_COLUMNS 100
+#define MAX_DATABASES 5
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <regex.h>
 
 
 typedef struct {
@@ -50,7 +56,7 @@ void show_tables(database *db){
 void show_columns(table *table){
     printf("\n%s\n", table->name);
     for (int i=0; i<(table->number_of_columns); i++){
-        printf("|\n|---- %s\n", table->columns[i]);
+        printf("|\n|---- %s\n", table->columns[i]->name);
     }
 }
 
@@ -96,41 +102,4 @@ int add_table_to_db(database *db, table *table){
 void add_row (table *tb, int number_of_columns, char *values[]){
     table_row *new_row = malloc(sizeof(table_row));
     // append *new_row to table->rows
-}
-
-
-int main(){
-    // Create tables
-    char *col_names[] = {"col1", "col2", "col3"};
-    table *nt = create_table("TABLE_NAME", 3, col_names);
-    table *nt2 = create_table("OTHER_NAME", 3, col_names);
-    table *nt3 = create_table("YET_ANOTHER_NAME", 3, col_names);
-    table *nt4 = create_table("YET_YET_ANOTHER_NAME", 3, col_names);
-    printf("%s\n", nt->name);
-    printf("%s\n", (nt->columns[0]->name));
-    
-    // Set type of column 
-    strcpy(nt->columns[0]->type, "INT");
-    printf("%s\n", (nt->columns[0]->type));
-    
-    // Add new row to column 
-    char v1[] = "v1";
-    char v2[] = "v2";
-    char v3[] = "v3";
-    //char ** values = {&v1, &v2, &v3};
-    char *values[] = {v1, v2, v3};
-    add_row(nt, nt->number_of_columns, values);
-    show_columns(nt);
-    
-    // Create database 
-    char *name = "DB_NAME";
-    database *mydb = create_db(name);
-    printf("%s\n", mydb->name);
-    
-    // Add tables to db
-    show_tables(mydb);
-    add_table_to_db(mydb, nt4);
-    show_tables(mydb);
-    
-    return 0;
 }
