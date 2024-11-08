@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "methods.c"
 
 
 typedef struct {
@@ -10,8 +11,13 @@ typedef struct {
 } InputBuffer;
 
 
-void print_prompt(){
-    printf("db> ");
+void print_prompt(database **pCurrent_db){
+    if ((*pCurrent_db)->name){
+        printf("%s> ", (*pCurrent_db)->name);
+    } 
+    else {
+        printf("db> ");
+    }
 }
 
 
@@ -47,11 +53,19 @@ int compare(char s1[], char s2[]){
 }
 
 
-int handle_command(InputBuffer* buffer, database *current_db, database *DBS[]){
+int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[]){
     if (compare(buffer->buffer, "SHOWCOLUMNS")){
-        printf("Showing columns...\n");
-        printf("%s\n", current_db->name);
-        //show_columns(buffer);
+        if (pCurrent_db){
+            printf("|DB_NAME\n|\n");
+            for (int i=0; i<MAX_TABLES; i++){
+                if ((*pCurrent_db)->tables[i]->name){
+                    printf("|---- %s\n|\n", (*pCurrent_db)->tables[i]->name);
+                } 
+            }
+        } else {
+            printf("No Database selected (use \"USEDATABASE\", or create a new one.)\n");
+        }
+            //show_columns(buffer);
     } 
     else if (compare(buffer->buffer, "EXIT")){
         printf("Exiting... \n");
@@ -62,8 +76,10 @@ int handle_command(InputBuffer* buffer, database *current_db, database *DBS[]){
         printf("Give db index\n");
         scanf("%d", &index); // Todo: validate input
         if (index < 5 && index >= 0 && DBS[index]){
-            current_db = DBS[index];
-        } else {
+            *pCurrent_db = DBS[index];
+            printf("Use_db: %s\n", (*pCurrent_db)->name);
+        } 
+        else {
             printf("This index is not valid.\n");
         }
     } 
@@ -76,8 +92,8 @@ int handle_command(InputBuffer* buffer, database *current_db, database *DBS[]){
         // Check if DB already exists
         for (int i=0; i<MAX_DATABASES; i++){
             if (!DBS[i]){
-                current_db = create_db(dbname);
-                DBS[i] = current_db;
+                *pCurrent_db = create_db(dbname);
+                DBS[i] = *pCurrent_db;
                 printf("DB %s created.\n", dbname);
                 return 0;
             }
@@ -86,9 +102,19 @@ int handle_command(InputBuffer* buffer, database *current_db, database *DBS[]){
                 continue; 
             }
         }
-        
-
-        
+    } 
+    else if (compare(buffer->buffer, "CREATETABLE")){
+        if (*pCurrent_db){
+            printf("\nCreating table in %s\n", (*pCurrent_db)->name);
+            char new_table_name[MAX_TABLE_NAME_LENGTH];
+            scanf("%s", &new_table_name);
+            printf("New table %s\n", new_table_name);
+            table *new_table = create_table(pCurrent_db, new_table_name, 3);
+            printf("\nNew table name: %s\n", new_table->name);
+        } 
+        else {
+            printf("No Database selected (use \"USEDATABASE\", or create a new one.)\n");
+        }
     }
     else if (compare(buffer->buffer, "SHOWDATABASES")){
         printf("| Your DBs\n|-----------\n");
@@ -115,11 +141,12 @@ int main() {
     database *DBS [MAX_DATABASES];
     InputBuffer* pBuffer = newInputBuffer();
     int end;
-    database *current_db;
+    database *current_db = DBS[0];
     do {
-        print_prompt();
+        check_database_files(current_db);
+        print_prompt(&current_db);
         read_input(pBuffer);
-        end = handle_command(pBuffer, current_db, DBS);
+        end = handle_command(pBuffer, &current_db, DBS);
     } while(end != 1);
     
     return 0;
