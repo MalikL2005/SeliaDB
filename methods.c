@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <regex.h>
+#include <dirent.h>
 
 
 typedef struct {
@@ -35,8 +36,9 @@ typedef struct {
 typedef struct {
     char name [MAX_TABLE_LENGTH];
     int number_of_columns; 
-    column *columns[MAX_COLUMNS];
+    column *columns[MAX_COLUMNS]; // *columns[number_of_columns]
     table_row *rows[MAX_ROWS];
+    table_row *last_row; 
     FILE *table_file;
 } table; 
 
@@ -47,11 +49,22 @@ typedef struct {
 } database;
 
 
-void check_database_files(database *db_ptr){
-    printf("Checking DB-files...\n");
-    database *test_db = malloc(sizeof(database));
-    strcpy(test_db->name, "test worked");
-    db_ptr = test_db;
+void check_for_init_folder(){
+    DIR* dir = opendir("./DB_init");
+    if (dir){
+        printf("DB_init-dir exists\n");
+    } else {
+        printf("Creating DB_init-dir\n");
+        mkdir("DB_init", 0777);
+    }
+}
+
+
+void * check_database_files(database *db_ptr){
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(".");
+
 }
 
 
@@ -74,11 +87,18 @@ void show_columns(table *table){
 }
 
 database *create_db(char *name){
-    char current_dir_path[] = "/home/malik/git_projects/DB/"; // Get current path (-> pwd?)
+    char current_dir_path[] = "/home/malik/git_projects/DB/DB_init/"; // Get current path (-> pwd?)
     char *dir_name = malloc(strlen(name) + strlen(current_dir_path));
     strcpy(dir_name, current_dir_path);
     strcat(dir_name, name);
     printf("New_dir: %s\n", dir_name);
+    // Check if dir already exists
+    struct stat s = {0};
+    if (!stat(dir_name, &s)){
+        printf("Dir %s already exists.", dir_name);
+        return NULL;
+    }
+
     int result = mkdir(dir_name, 0777);
     database *mydb = malloc(sizeof(database));
     strcpy(mydb->name, name);
@@ -87,35 +107,26 @@ database *create_db(char *name){
 
 
 table *create_table(database **pDb, char *table_name, int number_of_columns){
+
     // Create table-file in current_DB dir 
-    
+    FILE *fileptr;
+    char * new_table_file = malloc(sizeof(table_name) + sizeof("DB_init/") + sizeof((*pDb)->name) + 5);
+    strcpy(new_table_file, "DB_init/");
+    strcat(new_table_file, (*pDb)->name);
+    strcat(new_table_file, "/");
+    strcat(new_table_file, table_name);
+    strcat(new_table_file, ".txt");
+    printf("Full file path: %s\n", new_table_file);
+    fileptr = fopen(new_table_file, "w");
+    // Writing to file is still buggy 
+    fprintf(fileptr, "Hello World");
 
     // Create new table 
-    table *new_table = (table *) malloc(sizeof(table)); 
+    table *new_table = (table *) malloc(sizeof(table));
     strcpy(new_table->name, table_name);
     new_table->number_of_columns = number_of_columns;
-    // Add table to current DB 
-    for (int i=0; i<MAX_TABLES; i++){
-        if (!(*pDb)->tables[i]){
-            (*pDb)->tables[i] = new_table;
-
-            // Make table file
-            char *file_path = malloc(sizeof((*pDb)->name) + sizeof(table_name) + 5);
-            strcpy(file_path, (*pDb)->name);
-            strcat(file_path, "/");
-            strcat(file_path, table_name);
-            strcat(file_path, ".txt");
-            printf("%s", file_path);
-            (*pDb)->tables[i]->table_file = fopen(file_path, "w"); // fopen ("<db-dirname>/<table-filename>", "w")
-            fprintf((*pDb)->tables[i]->table_file, "Col1\tCol2\tCol3\n");
-
-            printf("\t%d\n", i);
-            break;
-        }
-    }
-
-
-    return (table *) new_table;
+    new_table->table_file = fileptr;
+    return new_table;
 }
 
 
@@ -133,5 +144,11 @@ int add_table_to_db(database *db, table *table){
 
 void add_row (table *tb, int number_of_columns, char *values[]){
     table_row *new_row = malloc(sizeof(table_row));
+    (*new_row->values) = *values;
+
+    // append row to table-file 
+    fprintf(tb->table_file, *new_row->values);
+
     // append *new_row to table->rows
+    tb->last_row = new_row;
 }
