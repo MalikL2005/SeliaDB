@@ -115,11 +115,14 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     strcat(new_table_file, (*pDb)->name);
     strcat(new_table_file, "/");
     strcat(new_table_file, table_name);
-    strcat(new_table_file, ".txt");
+    strcat(new_table_file, ".bin");
     printf("Full file path: %s\n", new_table_file);
-    fileptr = fopen(new_table_file, "w");
+    fileptr = fopen(new_table_file, "wb");
+    if (fileptr == NULL){
+        return NULL; 
+    }
     // Writing to file is still buggy 
-    fprintf(fileptr, "Hello World");
+    fwrite("Hi", sizeof("Hi"), 1, fileptr);
 
     // Create new table 
     table *new_table = (table *) malloc(sizeof(table));
