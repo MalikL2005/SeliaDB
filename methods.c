@@ -119,16 +119,32 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     printf("Full file path: %s\n", new_table_file);
     fileptr = fopen(new_table_file, "wb");
     if (fileptr == NULL){
+        printf("Could not create table_file\n");
         return NULL; 
     }
-    // Writing to file is still buggy 
-    fwrite("Hi", sizeof("Hi"), 1, fileptr);
+    
 
     // Create new table 
     table *new_table = (table *) malloc(sizeof(table));
     strcpy(new_table->name, table_name);
     new_table->number_of_columns = number_of_columns;
     new_table->table_file = fileptr;
+
+    // Writing to file is still buggy 
+    fwrite(table_name, sizeof(table_name), 1, fileptr); // Line 1: table-name 
+    fwrite('\n', sizeof('\n'), 1, fileptr);
+
+    // Write columns to file 
+    for (int i=0; i<number_of_columns; i++){
+        fwrite(i, sizeof(i), 1, fileptr); // Line 2: columns (i.e. headers) 
+    }
+    fwrite('\n', sizeof('\n'), 1, fileptr);
+
+    
+    // Free file_name
+    free(new_table_file);
+    new_table_file = NULL; 
+    
     return new_table;
 }
 
