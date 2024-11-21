@@ -8,7 +8,7 @@ The File-path looks something like this:
 |DB_init<br />
 |<br />
 |--- DB-name<br />
-     |<br />
-     |--- table1.bin<br />
-     |--- table2.bin<br />
+&nbsp;&nbsp;&nbsp;&nbsp;|<br />
+&nbsp;&nbsp;&nbsp;&nbsp;|--- table1.bin<br />
+&nbsp;&nbsp;&nbsp;&nbsp;|--- table2.bin<br />
 
