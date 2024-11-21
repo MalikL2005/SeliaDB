@@ -69,7 +69,7 @@ void * check_database_files(database *db_ptr){
 
 
 void show_tables(database *db){
-    printf("\n%s\n", db->name);
+    //printf("\n%s\n", db->name);
     for (int i=0; i<MAX_TABLES; i++){
         if (db->tables[i] == NULL){
             return;
@@ -79,10 +79,10 @@ void show_tables(database *db){
 }
 
 
-void show_columns(table *table){
-    printf("\n%s\n", table->name);
-    for (int i=0; i<(table->number_of_columns); i++){
-        printf("|\n|---- %s\n", table->columns[i]->name);
+void show_columns(database *db, table *tb){
+    printf("\n%s\n", db->name);
+    for (int i=0; i<(tb->number_of_columns); i++){
+        printf("|\n|---- %s\n", tb->columns[i]->name);
     }
 }
 
@@ -95,7 +95,7 @@ database *create_db(char *name){
     // Check if dir already exists
     struct stat s = {0};
     if (!stat(dir_name, &s)){
-        printf("Dir %s already exists.", dir_name);
+        printf("Dir %s already exists.\n", dir_name);
         return NULL;
     }
 
@@ -122,52 +122,60 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
         printf("Could not create table_file\n");
         return NULL; 
     }
-    
+    fileptr = fopen(new_table_file, "wb");
 
     // Create new table 
     table *new_table = (table *) malloc(sizeof(table));
     strcpy(new_table->name, table_name);
     new_table->number_of_columns = number_of_columns;
     new_table->table_file = fileptr;
-
-    // Writing to file is still buggy 
-    fwrite(table_name, sizeof(table_name), 1, fileptr); // Line 1: table-name 
-    fwrite('\n', sizeof('\n'), 1, fileptr);
-
-    // Write columns to file 
-    for (int i=0; i<number_of_columns; i++){
-        fwrite(i, sizeof(i), 1, fileptr); // Line 2: columns (i.e. headers) 
+    // Add table to DB 
+    for (int i = 0; i<MAX_TABLES; i++){
+        if (!(*pDb)->tables[i]){
+            (*pDb)->tables[i] = new_table; 
+            printf("New table %s in %s\n", (*pDb)->name, new_table->name);
+            break;
+        }
     }
-    fwrite('\n', sizeof('\n'), 1, fileptr);
 
+    // Writing to file  
+    fwrite(table_name, sizeof(*table_name), 1, fileptr); // Line 1: table-name 
+    // Write columns to file 
     
+    // create dummy columns values 
+    char ** values = malloc(sizeof(char*)*number_of_columns);
+    printf("Here\n");
+    // Seg fault here 
+    for (int i=0; i<number_of_columns; i++){
+        values[i] = malloc(MAX_COLUMN_NAME_LENGTH);
+        strcpy(values[i], "Column Number");
+    }
+
+    for (int i=0; i<number_of_columns; i++){
+        fwrite(values[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
+    }
+    fwrite("\n", sizeof("\n"), 1, fileptr);
+    fwrite("New Line\n", sizeof("New Line\n"), 1, fileptr);
     // Free file_name
-    free(new_table_file);
-    new_table_file = NULL; 
+    // free(new_table_file);
+    // new_table_file = NULL; 
     
     return new_table;
 }
 
 
-int add_table_to_db(database *db, table *table){
-    for (int i=0; i<MAX_TABLES; i++){
-        if (db->tables[i] == NULL){
-            db->tables[i] = table; 
-            return 0;
-        }
-        printf("%s\n", db->tables[i]->name);
-    }
-    return 1;
-}
 
-
-void add_row (table *tb, int number_of_columns, char *values[]){
+void add_row (table *tb, int number_of_columns, char **values){
+    printf("Hello World\n");
     table_row *new_row = malloc(sizeof(table_row));
-    (*new_row->values) = *values;
+    // (*new_row->values) = *values; // Segfault -> values datatype (char ** vs char [][])
+    printf("Hi\n");
 
     // append row to table-file 
-    fprintf(tb->table_file, *new_row->values);
+    for (int i=0; i<number_of_columns; i++){
+        fwrite((*values), sizeof((*values)), 1, tb->table_file);
+    }
 
     // append *new_row to table->rows
-    tb->last_row = new_row;
+    //tb->last_row = new_row;
 }
