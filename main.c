@@ -2,7 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include "methods.c"
-// Test comment 
+// Test comment
+// Test 2
 
 typedef struct {
     char* buffer; 
