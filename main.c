@@ -56,7 +56,7 @@ int compare(char s1[], char s2[]){
 int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[]){
     if (compare(buffer->buffer, "SHOWCOLUMNS")){
         if (pCurrent_db){
-            printf("|DB_NAME\n|\n");
+            printf("|%s\n|\n", (*pCurrent_db)->name);
             for (int i=0; i<MAX_TABLES; i++){
                 if ((*pCurrent_db)->tables[i]->name){
                     printf("|---- %s\n|\n", (*pCurrent_db)->tables[i]->name);
@@ -65,8 +65,8 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
         } else {
             printf("No Database selected (use \"USEDATABASE\", or create a new one.)\n");
         }
-            //show_columns(buffer);
-    } 
+           // show_columns(buffer);
+    }
     else if (compare(buffer->buffer, "EXIT")){
         printf("Exiting... \n");
         return 1;
@@ -91,23 +91,21 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
         
         // Check if DB already exists
         for (int i=0; i<MAX_DATABASES; i++){
-            if (!DBS[i]){
-                *pCurrent_db = create_db(dbname);
-                if (!pCurrent_db){
-                    printf("Could not create Database.\n");
-                    return 0; 
-                }
-
+            if (DBS[i]){
+                continue;
+            }
+            *pCurrent_db = create_db(dbname);
+            if (!*pCurrent_db){
+                printf("Could not create Database.\n");
+                break; 
+            } else {
                 DBS[i] = *pCurrent_db;
-                printf("DB %s created.\n", dbname);
+                printf("DB %s created.\n", dbname); 
+                printf("current db: %s\n", (*pCurrent_db)->name);
                 return 0;
             }
-            if (compare(dbname, DBS[i]->name)){
-                printf("DB already exists\n");
-                continue; 
-            }
         }
-    } 
+    }
     else if (compare(buffer->buffer, "CREATETABLE")){
         if (*pCurrent_db){
             printf("\nCreating table in %s\n", (*pCurrent_db)->name);
@@ -118,7 +116,7 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
 
             // Next line creates seg fault 
             table *new_table = create_table(pCurrent_db, new_table_name, 3);
-            // printf("\nNew table name: %s\n", new_table->name);
+            printf("Currents new table: %s\n", (*pCurrent_db)->tables[0]->name);
         } 
         else {
             printf("No Database selected (use \"USEDATABASE\", or create a new one.)\n");
@@ -135,14 +133,27 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
         }
     }
     else if (compare(buffer->buffer, "ADDROW")){
-        if (*pCurrent_db && (*pCurrent_db)->tables[0]->name){
+        int *index = malloc(sizeof(int));
+        printf("Table_index: ");
+        scanf("%d", index);
+        printf("%d", index);
+        if (*pCurrent_db){
             printf("Hello\n");
-            printf("%s", (*pCurrent_db)->tables[0]->name);
-            char *new_row_values[(*pCurrent_db)->tables[0]->number_of_columns];
-            for(int i=0; i<(*pCurrent_db)->tables[0]->number_of_columns; i++){
-                printf("%d\n", (*new_row_values[i]));
+            for (int i=0; i<10; i++){
+                if ((*pCurrent_db)->tables[i]){
+                    // Open file with "wb" mode 
+                    FILE *pFile = (*pCurrent_db)->tables[i]->table_file;
+                    printf("%s, index %d\n", (*pCurrent_db)->tables[i]->name, i);
+                    char ** values = malloc((*pCurrent_db)->tables[i]->number_of_columns * sizeof(char*));
+                    for (int j=0; j<(*pCurrent_db)->tables[i]->number_of_columns; j++){
+                        values[j] = "Value";
+                    }
+                break;
+                    // char *new_row_values[(*pCurrent_db)->tables[0]->number_of_columns];
+                    //add_row((*pCurrent_db)->tables[0], (*pCurrent_db)->tables[0]->number_of_columns, new_row_values);
+                }
             }
-            //add_row((*pCurrent_db)->tables[0], (*pCurrent_db)->tables[0]->number_of_columns, new_row_values);
+            printf("Bye\n");
         } 
         else {
             printf("No Database or Table selected (use \"USEDATABASE\" and \"CREATETABLE\")\n");
