@@ -40,6 +40,7 @@ typedef struct {
     table_row *rows[MAX_ROWS];
     table_row *last_row; 
     FILE *table_file;
+    char *file_name; 
 } table; 
 
 
@@ -129,6 +130,7 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     strcpy(new_table->name, table_name);
     new_table->number_of_columns = number_of_columns;
     new_table->table_file = fileptr;
+    new_table->file_name = new_table_file; 
     // Add table to DB 
     for (int i = 0; i<MAX_TABLES; i++){
         if (!(*pDb)->tables[i]){
@@ -139,13 +141,11 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     }
 
     // Writing to file  
-    fwrite(table_name, sizeof(*table_name), 1, fileptr); // Line 1: table-name 
-    // Write columns to file 
-    
+    fwrite(table_name, MAX_TABLE_NAME_LENGTH, 1, fileptr); // Line 1: table-name 
+    fwrite("\n", sizeof("\n"), 1, fileptr);
     // create dummy columns values 
     char ** values = malloc(sizeof(char*)*number_of_columns);
     printf("Here\n");
-    // Seg fault here 
     for (int i=0; i<number_of_columns; i++){
         values[i] = malloc(MAX_COLUMN_NAME_LENGTH);
         strcpy(values[i], "Column Number");
@@ -165,17 +165,11 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
 
 
 
-void add_row (table *tb, int number_of_columns, char **values){
-    printf("Hello World\n");
-    table_row *new_row = malloc(sizeof(table_row));
-    // (*new_row->values) = *values; // Segfault -> values datatype (char ** vs char [][])
-    printf("Hi\n");
-
+void add_row (table *tb, char **values){
     // append row to table-file 
-    for (int i=0; i<number_of_columns; i++){
-        fwrite((*values), sizeof((*values)), 1, tb->table_file);
+    FILE * pFile = fopen(tb->file_name, "wb");
+    printf("Printing row to file %s\n", tb->file_name);
+    for (int i=0; i<(tb->number_of_columns); i++){
+        fwrite((*values), sizeof((*values)), 1, pFile);
     }
-
-    // append *new_row to table->rows
-    //tb->last_row = new_row;
 }

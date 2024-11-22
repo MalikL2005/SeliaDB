@@ -115,7 +115,6 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
             scanf("%s", new_table_name);
             printf("Assigned name, %s\n", new_table_name);
 
-            // Next line creates seg fault 
             table *new_table = create_table(pCurrent_db, new_table_name, 3);
             printf("Currents new table: %s\n", (*pCurrent_db)->tables[0]->name);
         } 
@@ -139,16 +138,15 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
         scanf("%d", index);
         printf("%d", index);
         if (*pCurrent_db){
-            printf("Hello\n");
             for (int i=0; i<10; i++){
                 if ((*pCurrent_db)->tables[i]){
                     // Open file with "wb" mode 
-                    FILE *pFile = (*pCurrent_db)->tables[i]->table_file;
                     printf("%s, index %d\n", (*pCurrent_db)->tables[i]->name, i);
                     char ** values = malloc((*pCurrent_db)->tables[i]->number_of_columns * sizeof(char*));
                     for (int j=0; j<(*pCurrent_db)->tables[i]->number_of_columns; j++){
                         values[j] = "Value";
                     }
+                add_row((*pCurrent_db)->tables[i], values);
                 break;
                     // char *new_row_values[(*pCurrent_db)->tables[0]->number_of_columns];
                     //add_row((*pCurrent_db)->tables[0], (*pCurrent_db)->tables[0]->number_of_columns, new_row_values);
