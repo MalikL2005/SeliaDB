@@ -155,11 +155,7 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
         fwrite(values[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
     }
     fwrite("\n", sizeof("\n"), 1, fileptr);
-    fwrite("New Line\n", sizeof("New Line\n"), 1, fileptr);
-    // Free file_name
-    // free(new_table_file);
-    // new_table_file = NULL; 
-    
+    fclose(fileptr);
     return new_table;
 }
 
@@ -167,9 +163,13 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
 
 void add_row (table *tb, char **values){
     // append row to table-file 
-    FILE * pFile = fopen(tb->file_name, "wb");
+    FILE * pFile = fopen(tb->file_name, "ab");
+
     printf("Printing row to file %s\n", tb->file_name);
     for (int i=0; i<(tb->number_of_columns); i++){
-        fwrite((*values), sizeof((*values)), 1, pFile);
+        fwrite(values[i], sizeof(values[i]), 1, pFile);
+        printf("%d ", sizeof(values)+1);
+        printf("%s\n", values[i]);
     }
+    fwrite("\n", sizeof("\n"), 1, pFile);
 }
