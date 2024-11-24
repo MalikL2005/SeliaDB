@@ -132,6 +132,10 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
             }
         }
     }
+    else if (compare(buffer->buffer, "READFILE")){
+        printf("Reading file...\n");
+        create_table_from_file("test.bin");
+    }
     else if (compare(buffer->buffer, "ADDROW")){
         int *index = malloc(sizeof(int));
         printf("Table_index: ");
@@ -140,7 +144,6 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
         if (*pCurrent_db){
             for (int i=0; i<10; i++){
                 if ((*pCurrent_db)->tables[i]){
-                    // Open file with "wb" mode 
                     printf("%s, index %d\n", (*pCurrent_db)->tables[i]->name, i);
                     char ** values = malloc((*pCurrent_db)->tables[i]->number_of_columns * sizeof(char*));
                     for (int j=0; j<(*pCurrent_db)->tables[i]->number_of_columns; j++){
@@ -148,11 +151,8 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
                     }
                 add_row((*pCurrent_db)->tables[i], values);
                 break;
-                    // char *new_row_values[(*pCurrent_db)->tables[0]->number_of_columns];
-                    //add_row((*pCurrent_db)->tables[0], (*pCurrent_db)->tables[0]->number_of_columns, new_row_values);
                 }
             }
-            printf("Bye\n");
         } 
         else {
             printf("No Database or Table selected (use \"USEDATABASE\" and \"CREATETABLE\")\n");

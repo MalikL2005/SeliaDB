@@ -140,8 +140,12 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
         }
     }
 
-    // Writing to file  
-    fwrite(table_name, MAX_TABLE_NAME_LENGTH, 1, fileptr); // Line 1: table-name 
+    // Writing to fileptr 
+    int * pNum_of_cols = &number_of_columns;
+    fwrite(table_name, MAX_TABLE_NAME_LENGTH, 1, fileptr); // table-name
+    //fwrite("\n", sizeof("\n"), 1, fileptr);
+    fwrite(&number_of_columns, sizeof(number_of_columns), 1, fileptr); // number of cols 
+    //fwrite(0, sizeof(int), 1, fileptr); //number of entries
     fwrite("\n", sizeof("\n"), 1, fileptr);
     // create dummy columns values 
     char ** values = malloc(sizeof(char*)*number_of_columns);
@@ -164,6 +168,7 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
 void add_row (table *tb, char **values){
     // append row to table-file 
     FILE * pFile = fopen(tb->file_name, "ab");
+    // increment number of entries by one (at SEEK_SET + MAX_TABLE_NAME_LENGTH + sizeof(number_of_columns))
 
     printf("Printing row to file %s\n", tb->file_name);
     for (int i=0; i<(tb->number_of_columns); i++){
@@ -173,3 +178,30 @@ void add_row (table *tb, char **values){
     }
     fwrite("\n", sizeof("\n"), 1, pFile);
 }
+
+table * create_table_from_file(char * filename){
+    FILE * pFile = fopen(filename, "rb");
+    if (!pFile){
+        printf("Could not read file %s\n", filename);
+        return NULL;
+    }
+    table *tb = malloc(sizeof(table));
+    // get name of table 
+    fread(tb->name, sizeof(char), MAX_TABLE_NAME_LENGTH, pFile);
+    printf("table_name: %s\n", tb->name);
+
+    // get number_of_columns
+    fseek(pFile, MAX_TABLE_NAME_LENGTH, SEEK_SET);
+    fread(&(tb->number_of_columns), sizeof(int), 1, pFile);
+    printf("Number of cols: %d\n", tb->number_of_columns);
+
+    // get number_of_entries 
+
+
+
+    // get columns / headers 
+
+
+    // get values 
+}
+
