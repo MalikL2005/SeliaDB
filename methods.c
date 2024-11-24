@@ -37,6 +37,7 @@ typedef struct {
     char name [MAX_TABLE_LENGTH];
     int number_of_columns; 
     column *columns[MAX_COLUMNS]; // *columns[number_of_columns]
+    int number_of_entries;
     table_row *rows[MAX_ROWS];
     table_row *last_row; 
     FILE *table_file;
@@ -131,6 +132,7 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     new_table->number_of_columns = number_of_columns;
     new_table->table_file = fileptr;
     new_table->file_name = new_table_file; 
+    new_table->number_of_entries = 0;
     // Add table to DB 
     for (int i = 0; i<MAX_TABLES; i++){
         if (!(*pDb)->tables[i]){
@@ -143,9 +145,8 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     // Writing to fileptr 
     int * pNum_of_cols = &number_of_columns;
     fwrite(table_name, MAX_TABLE_NAME_LENGTH, 1, fileptr); // table-name
-    //fwrite("\n", sizeof("\n"), 1, fileptr);
     fwrite(&number_of_columns, sizeof(number_of_columns), 1, fileptr); // number of cols 
-    //fwrite(0, sizeof(int), 1, fileptr); //number of entries
+    fwrite(&(new_table->number_of_entries), sizeof(int), 1, fileptr); //number of entries
     fwrite("\n", sizeof("\n"), 1, fileptr);
     // create dummy columns values 
     char ** values = malloc(sizeof(char*)*number_of_columns);
@@ -179,6 +180,7 @@ void add_row (table *tb, char **values){
     fwrite("\n", sizeof("\n"), 1, pFile);
 }
 
+
 table * create_table_from_file(char * filename){
     FILE * pFile = fopen(filename, "rb");
     if (!pFile){
@@ -196,7 +198,9 @@ table * create_table_from_file(char * filename){
     printf("Number of cols: %d\n", tb->number_of_columns);
 
     // get number_of_entries 
-
+    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(tb->number_of_columns), SEEK_SET);
+    fread(&(tb->number_of_entries), sizeof(int), 1, pFile);
+    printf("Number of entries: %d\n", tb->number_of_entries);
 
 
     // get columns / headers 
