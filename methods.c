@@ -1,7 +1,7 @@
 #define MAX_TABLE_LENGTH 32
 #define MAX_TABLES 10
 #define MAX_DB_NAME_LENGTH 32
-#define MAX_TABLE_NAME_LENGTH 32
+#define MAX_TABLE_NAME_LENGTH 10
 #define MAX_COLUMN_NAME_LENGTH 32
 #define MAX_INDEX_NAME_LENGTH 32
 #define MAX_COLUMNS 100
@@ -124,7 +124,6 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
         printf("Could not create table_file\n");
         return NULL; 
     }
-    fileptr = fopen(new_table_file, "wb");
 
     // Create new table 
     table *new_table = (table *) malloc(sizeof(table));
@@ -145,9 +144,9 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     // Writing to fileptr 
     int * pNum_of_cols = &number_of_columns;
     fwrite(table_name, MAX_TABLE_NAME_LENGTH, 1, fileptr); // table-name
-    fwrite(&number_of_columns, sizeof(number_of_columns), 1, fileptr); // number of cols 
+    fwrite(&(new_table->number_of_columns), sizeof(int), 1, fileptr); // number of cols 
     fwrite(&(new_table->number_of_entries), sizeof(int), 1, fileptr); //number of entries
-    fwrite("\n", sizeof("\n"), 1, fileptr);
+    fwrite("\n", strlen("\n"), 1, fileptr);
     // create dummy columns values 
     char ** values = malloc(sizeof(char*)*number_of_columns);
     printf("Here\n");
@@ -167,17 +166,62 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
 
 
 void add_row (table *tb, char **values){
-    // append row to table-file 
-    FILE * pFile = fopen(tb->file_name, "ab");
+    // append row to table-filendex
+    FILE * pFile = fopen(tb->file_name, "rb+");
     // increment number of entries by one (at SEEK_SET + MAX_TABLE_NAME_LENGTH + sizeof(number_of_columns))
 
     printf("Printing row to file %s\n", tb->file_name);
+    fseek(pFile, 0, SEEK_END);
     for (int i=0; i<(tb->number_of_columns); i++){
-        fwrite(values[i], sizeof(values[i]), 1, pFile);
-        printf("%d ", sizeof(values)+1);
-        printf("%s\n", values[i]);
+        fwrite(values[i], strlen(values[i]), 1, pFile);
     }
-    fwrite("\n", sizeof("\n"), 1, pFile);
+    fwrite("\n", strlen("\n"), 1, pFile);
+    
+
+    fseek(pFile, MAX_TABLE_NAME_LENGTH, SEEK_SET);
+    int *temp_noc = malloc(sizeof(int));
+    fread(temp_noc, sizeof(int), 1, pFile);
+    printf("Num of columns: %d\n", *temp_noc);
+    free(temp_noc);
+
+    // read current num of entries 
+    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(int), SEEK_SET);
+    fread(&(tb->number_of_entries), sizeof(int), 1, pFile);
+    tb->number_of_entries ++;
+    printf("read num of entries: %d\n", tb->number_of_entries);
+    
+    // create new file to copy half of it 
+    FILE *tempFile = fopen("DB_init/temp_file.bin", "wb");
+    long position_in_file = ftell(pFile) - sizeof(int);
+    char *buffer_front = malloc(position_in_file);
+    rewind(pFile);
+    fread(buffer_front, sizeof(char), position_in_file, pFile);
+    printf("%s\n", buffer_front);
+    fwrite(buffer_front, strlen(buffer_front), 1, tempFile);
+    free(buffer_front);
+    
+    // Write updated value to file
+    fwrite(&(tb->number_of_entries), sizeof(tb->number_of_entries), 1, tempFile);
+    
+    // Copy rest of file 
+
+    // length of file
+    fseek(pFile, 0, SEEK_END);
+    long int length = ftell(pFile);
+    // problem withh malloc; malloces 8 bytes, when 133 -> 144 are needed
+    char * buffer_back = malloc(length);
+    
+    printf("%d\n", length);
+    printf("%d\n", sizeof(buffer_back));
+    fseek(pFile, position_in_file + sizeof(int), SEEK_SET);
+    fread(buffer_back, sizeof(buffer_back), 1, pFile);
+    printf("%s\n", buffer_back);
+    fwrite(buffer_back, sizeof(buffer_back), 1, tempFile);
+
+
+    fseek(pFile, 0, SEEK_END);
+    fclose(tempFile);
+    fclose(pFile);
 }
 
 
