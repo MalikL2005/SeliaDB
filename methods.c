@@ -51,12 +51,12 @@ typedef struct {
 
 
 void check_for_init_folder(){
-    DIR* dir = opendir("./DB_init");
+    DIR* dir = opendir("./DB_init.db");
     if (dir){
         printf("DB_init-dir exists\n");
     } else {
         printf("Creating DB_init-dir\n");
-        mkdir("DB_init", 0777);
+        mkdir("DB_init.db", 0777);
     }
 }
 
@@ -88,7 +88,7 @@ void show_columns(database *db, table *tb){
 }
 
 database *create_db(char *name){
-    char current_dir_path[] = "/home/malik/git_projects/DB/DB_init/"; // Get current path (-> pwd?)
+    char current_dir_path[] = "/home/malik/git_projects/DB/DB_init.db/"; // Get current path (-> pwd?)
     char *dir_name = malloc(strlen(name) + strlen(current_dir_path));
     strcpy(dir_name, current_dir_path);
     strcat(dir_name, name);
@@ -111,8 +111,8 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
 
     // Create table-file in current_DB dir 
     FILE *fileptr;
-    char * new_table_file = malloc(sizeof(table_name) + sizeof("DB_init/") + sizeof((*pDb)->name) + 5);
-    strcpy(new_table_file, "DB_init/");
+    char * new_table_file = malloc(sizeof(table_name) + sizeof("DB_init.db/") + sizeof((*pDb)->name)+5);
+    strcpy(new_table_file, "DB_init.db/");
     strcat(new_table_file, (*pDb)->name);
     strcat(new_table_file, "/");
     strcat(new_table_file, table_name);
@@ -120,12 +120,12 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     printf("Full file path: %s\n", new_table_file);
     fileptr = fopen(new_table_file, "wb");
     if (fileptr == NULL){
-        printf("Could not create table_file\n");
+        printf("Error: Could not create table_file\n");
         return NULL; 
     }
 
     // Create new table 
-    table *new_table = (table *) malloc(sizeof(table));
+    table *new_table = (table *) malloc(sizeof(table) + 4);
     strcpy(new_table->name, table_name);
     new_table->number_of_columns = number_of_columns;
     new_table->table_file = fileptr;
@@ -191,13 +191,16 @@ void add_row (table *tb, char **values){
     
     // create new file to copy half of it 
     FILE *tempFile = fopen("DB_init/temp_file.bin", "wb");
+    if (!tempFile){
+        printf("Error: Could not create temporary file.\n");
+        return; 
+    }
     long position_in_file = ftell(pFile) - sizeof(int);
     char *buffer_front = malloc(position_in_file);
     rewind(pFile);
     fread(buffer_front, sizeof(char), position_in_file, pFile);
     printf("Front_buffer\n%s\n", buffer_front);
     fwrite(buffer_front, strlen(buffer_front), 1, tempFile);
-    free(buffer_front);
     
     // Write updated value to file
     printf("Newnum\n%d\n", tb->number_of_entries);
@@ -223,6 +226,45 @@ void add_row (table *tb, char **values){
 }
 
 
+int read_databases(database* DBS[]){
+    DIR* db_init_folder = opendir("DB_init.db");
+    int files = 0;
+    if (!db_init_folder){
+        printf("Error: No DB_init.db folder.\n");
+        return 1;
+    }
+    struct dirent *db_init_sub_dir;
+
+    // check all current dbs 
+    for (int i=0; i< MAX_DATABASES; i++){
+        printf("DB %d: %s\n", i, DBS[i]);
+    }
+
+    // iterate over all dirs in DB_init-folder 
+    while (db_init_sub_dir = readdir(db_init_folder)){
+        // Remove all dirs that are not DBS 
+        if (strcmp(db_init_sub_dir->d_name, ".") || strcmp(db_init_sub_dir->d_name, "..")){
+            printf("Rm: ");
+        }
+        files ++;
+        printf("File no %d: '%s'\n", files, db_init_sub_dir->d_name);
+
+        // create new db 
+        database * new_db = create_db(db_init_sub_dir->d_name);
+        // list all files in folder (that are .bin) 
+
+        // if MAX_DATABASES < all dirs in current folder: 
+
+        //      for file in files_of_current_dir: 
+        //          if MAX_TABLES < file_index:
+        //              create_table_from_file(file) 
+
+    }
+    printf("Returning to main function.\n");
+    return 0;
+}
+
+
 table * create_table_from_file(char * filename){
     FILE * pFile = fopen(filename, "rb");
     if (!pFile){
@@ -243,7 +285,6 @@ table * create_table_from_file(char * filename){
     fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(tb->number_of_columns), SEEK_SET);
     fread(&(tb->number_of_entries), sizeof(int), 1, pFile);
     printf("Number of entries: %d\n", tb->number_of_entries);
-
 
     // get columns / headers 
 

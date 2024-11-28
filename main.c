@@ -132,6 +132,13 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
             }
         }
     }
+    else if (compare(buffer->buffer, "READDBS")){
+        if (read_databases(DBS) == 0){
+            printf("Read databases successfully.\n");
+        }else{
+            printf("Could not read databases.\n");
+        }
+    }
     else if (compare(buffer->buffer, "READFILE")){
         printf("Reading file...\n");
         create_table_from_file("test.bin");
