@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <regex.h>
 #include <dirent.h>
 
 
@@ -196,30 +195,29 @@ void add_row (table *tb, char **values){
     char *buffer_front = malloc(position_in_file);
     rewind(pFile);
     fread(buffer_front, sizeof(char), position_in_file, pFile);
-    printf("%s\n", buffer_front);
+    printf("Front_buffer\n%s\n", buffer_front);
     fwrite(buffer_front, strlen(buffer_front), 1, tempFile);
     free(buffer_front);
     
     // Write updated value to file
+    printf("Newnum\n%d\n", tb->number_of_entries);
     fwrite(&(tb->number_of_entries), sizeof(tb->number_of_entries), 1, tempFile);
     
     // Copy rest of file 
 
     // length of file
     fseek(pFile, 0, SEEK_END);
-    long int length = ftell(pFile);
-    // problem withh malloc; malloces 8 bytes, when 133 -> 144 are needed
-    char * buffer_back = malloc(length);
-    
-    printf("%d\n", length);
-    printf("%d\n", sizeof(buffer_back));
+    long int length = ftell(pFile); // -MAX_TABLE_NAME_LENGTH - sizeof(int);
+    char * buffer_back = malloc(1024); // malloc(length)
     fseek(pFile, position_in_file + sizeof(int), SEEK_SET);
-    fread(buffer_back, sizeof(buffer_back), 1, pFile);
-    printf("%s\n", buffer_back);
-    fwrite(buffer_back, sizeof(buffer_back), 1, tempFile);
+    fread(buffer_back, length, 1, pFile);
+    printf("Back_buffer\n%s\n", buffer_back);
+    fwrite(buffer_back, length, 1, tempFile);
+    fseek(tempFile, 0, SEEK_END);
+    position_in_file = ftell(tempFile);
+    printf("Position in tempfile: %d\n", position_in_file);
 
-
-    fseek(pFile, 0, SEEK_END);
+    // copy all the content of tempFile to pFile (with mode "wb+") (overwriting existing content in pFile)
     fclose(tempFile);
     fclose(pFile);
 }
