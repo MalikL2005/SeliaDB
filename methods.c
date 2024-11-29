@@ -145,7 +145,6 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     fwrite(table_name, MAX_TABLE_NAME_LENGTH, 1, fileptr); // table-name
     fwrite(&(new_table->number_of_columns), sizeof(int), 1, fileptr); // number of cols 
     fwrite(&(new_table->number_of_entries), sizeof(int), 1, fileptr); //number of entries
-    fwrite("\n", strlen("\n"), 1, fileptr);
     // create dummy columns values 
     char ** values = malloc(sizeof(char*)*number_of_columns);
     printf("Here\n");
@@ -157,7 +156,6 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     for (int i=0; i<number_of_columns; i++){
         fwrite(values[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
     }
-    fwrite("\n", sizeof("\n"), 1, fileptr);
     fclose(fileptr);
     return new_table;
 }
@@ -174,10 +172,8 @@ void add_row (table *tb, char **values){
     for (int i=0; i<(tb->number_of_columns); i++){
         fwrite(values[i], strlen(values[i]), 1, pFile);
     }
-    fwrite("\n", strlen("\n"), 1, pFile);
-    
 
-    fseek(pFile, MAX_TABLE_NAME_LENGTH, SEEK_SET);
+    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(int), SEEK_SET);
     int *temp_noc = malloc(sizeof(int));
     fread(temp_noc, sizeof(int), 1, pFile);
     printf("Num of columns: %d\n", *temp_noc);
@@ -190,7 +186,7 @@ void add_row (table *tb, char **values){
     printf("read num of entries: %d\n", tb->number_of_entries);
     
     // create new file to copy half of it 
-    FILE *tempFile = fopen("DB_init/temp_file.bin", "wb");
+    FILE *tempFile = fopen("DB_init.db/temp_file.bin", "wb"); // fopen("DB_init.db/<SELECTED_DB_NAME>/temp_file.bin", "wb");
     if (!tempFile){
         printf("Error: Could not create temporary file.\n");
         return; 
@@ -212,6 +208,7 @@ void add_row (table *tb, char **values){
     fseek(pFile, 0, SEEK_END);
     long int length = ftell(pFile); // -MAX_TABLE_NAME_LENGTH - sizeof(int);
     char * buffer_back = malloc(1024); // malloc(length)
+    rewind(pFile);
     fseek(pFile, position_in_file + sizeof(int), SEEK_SET);
     fread(buffer_back, length, 1, pFile);
     printf("Back_buffer\n%s\n", buffer_back);
@@ -290,5 +287,6 @@ table * create_table_from_file(char * filename){
 
 
     // get values 
+    
 }
 
