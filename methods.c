@@ -43,6 +43,8 @@ typedef struct {
     table_row *last_row; 
     FILE *table_file;
     char *file_name; 
+    int * pLastEntry;
+    int * pLastEntryPointer;
 } table; 
 
 
@@ -204,6 +206,22 @@ void add_row (table *tb, char **values){
     fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(*new_number_of_entries), SEEK_SET);
     fread(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
     (*new_number_of_entries) ++;
+
+    // read pLastEntryPointer
+    int *pLastEntryPointer = malloc(sizeof(int));
+    fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), SEEK_SET);
+    fread(pLastEntryPointer, sizeof(*pLastEntryPointer), 1, pFile);
+    printf("Last entry pointer: %d\n", *pLastEntryPointer);
+    (*pLastEntryPointer) += sizeof(int);
+    printf("new entry pointer: %d\n", *pLastEntryPointer);
+
+    // read pLastEntry 
+    int *pLastEntry = malloc(sizeof(int));
+    fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*3), SEEK_SET);
+    fread(pLastEntry, sizeof(*pLastEntry), 1, pFile);
+    printf("Last entry: %d\n", *pLastEntry);
+    (*pLastEntry) += sizeof(int);
+    printf("new entry: %d\n", *pLastEntry);
     
     // create new file to copy half of it 
     FILE *tempFile = fopen("DB_init.db/temp_file.bin", "wb"); // fopen("DB_init.db/<SELECTED_DB_NAME>/temp_file.bin", "wb");
@@ -240,8 +258,13 @@ void add_row (table *tb, char **values){
     fwrite(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
     fwrite(buffer_back, length - position_after_noe, 1, pFile);
 
+    // update last Entry pointer 
+    fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), SEEK_SET);
+    fwrite(pLastEntryPointer, sizeof(*pLastEntryPointer), 1, pFile);
 
-
+    // update last Entry  
+    fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*3), SEEK_SET);
+    fwrite(pLastEntry, sizeof(*pLastEntry), 1, pFile);
 
     fclose(tempFile);
     fclose(pFile);
