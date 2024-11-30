@@ -7,6 +7,8 @@
 #define MAX_COLUMNS 100
 #define MAX_DATABASES 5
 #define MAX_ROWS 200
+#define START_ENTRY_POINTERS MAX_TABLE_NAME_LENGTH + sizeof(int)*4
+#define FILE_SIZE 1024
 
 #include <string.h>
 #include <stdio.h>
@@ -125,7 +127,7 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     }
 
     //truncate file to specific length 
-    if (ftruncate(fileno(fileptr), 1024) != 0){
+    if (ftruncate(fileno(fileptr), FILE_SIZE) != 0){
         printf("Error: Could not truncate file properly.\n");
         return NULL;
     }
@@ -162,6 +164,20 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     for (int i=0; i<number_of_columns; i++){
         fwrite(values[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
     }
+
+    // write pointer to last Entry 
+    int *pLastEntry = malloc(sizeof(int));
+    *pLastEntry = FILE_SIZE;
+    fseek(fileptr, (MAX_TABLE_NAME_LENGTH + sizeof(int)*3), SEEK_SET);
+    fwrite(pLastEntry, sizeof(*pLastEntry), 1, fileptr);
+
+
+    // write pointer to last entry pointer to file 
+    int * pLastEntryPointer = malloc(sizeof(int));
+    *pLastEntryPointer = START_ENTRY_POINTERS;
+    fseek(fileptr, (MAX_TABLE_NAME_LENGTH + sizeof(int)* 2), SEEK_SET);
+    fwrite(pLastEntryPointer, sizeof(*pLastEntryPointer), 1, fileptr);
+
     fclose(fileptr);
     return new_table;
 }
@@ -169,12 +185,15 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
 
 
 void add_row (table *tb, char **values){
-    // append row to table-filendex
+    // append row to table-file
     FILE * pFile = fopen(tb->file_name, "rb+");
-    // increment number of entries by one (at SEEK_SET + MAX_TABLE_NAME_LENGTH + sizeof(number_of_columns))
-
+    if (!pFile){
+        printf("Error: Could not open file.\n");
+        return;
+    }
     printf("Printing row to file %s\n", tb->file_name);
-    
+
+    // increment number of entries by one (at SEEK_SET + MAX_TABLE_NAME_LENGTH + sizeof(number_of_columns))
     // read num of columns
     int *temp_noc = malloc(sizeof(int));
     fseek(pFile, MAX_TABLE_NAME_LENGTH, SEEK_SET);
@@ -220,6 +239,10 @@ void add_row (table *tb, char **values){
     fwrite(buffer_front, MAX_TABLE_NAME_LENGTH + sizeof(*temp_noc), 1, pFile);
     fwrite(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
     fwrite(buffer_back, length - position_after_noe, 1, pFile);
+
+
+
+
     fclose(tempFile);
     fclose(pFile);
 }
@@ -288,6 +311,18 @@ table * create_table_from_file(char * filename){
     // get length 
     fseek(pFile, 0, SEEK_END);
     printf("Length of file: %d\n", ftell(pFile));
+
+    // last entry pointer 
+    fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), SEEK_SET);
+    int lep;
+    fread(&lep, sizeof(lep), 1, pFile);
+    printf("Last entry pointer: %d\n", lep);
+
+    // last entry 
+    fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*3), SEEK_SET);
+    int le;
+    fread(&le, sizeof(le), 1, pFile);
+    printf("Last entry: %d\n", le);
 
     // get columns / headers 
 
