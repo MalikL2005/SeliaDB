@@ -145,13 +145,12 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
     }
     else if (compare(buffer->buffer, "ADDROW")){
         int *index = malloc(sizeof(int));
-        printf("Table_index: ");
+        printf("Table index: ");
         scanf("%d", index);
-        printf("%d", index);
         if (*pCurrent_db){
             for (int i=0; i<10; i++){
                 if ((*pCurrent_db)->tables[i]){
-                    printf("%s, index %d\n", (*pCurrent_db)->tables[i]->name, i);
+                    printf("\n%s, index %d\n", (*pCurrent_db)->tables[i]->name, i);
                     char ** values = malloc((*pCurrent_db)->tables[i]->number_of_columns * sizeof(char*));
                     for (int j=0; j<(*pCurrent_db)->tables[i]->number_of_columns; j++){
                         values[j] = "Value";

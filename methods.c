@@ -124,6 +124,12 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
         return NULL; 
     }
 
+    //truncate file to specific length 
+    if (ftruncate(fileno(fileptr), 1024) != 0){
+        printf("Error: Could not truncate file properly.\n");
+        return NULL;
+    }
+
     // Create new table 
     table *new_table = (table *) malloc(sizeof(table) + 4);
     strcpy(new_table->name, table_name);
@@ -168,22 +174,17 @@ void add_row (table *tb, char **values){
     // increment number of entries by one (at SEEK_SET + MAX_TABLE_NAME_LENGTH + sizeof(number_of_columns))
 
     printf("Printing row to file %s\n", tb->file_name);
-    fseek(pFile, 0, SEEK_END);
-    for (int i=0; i<(tb->number_of_columns); i++){
-        fwrite(values[i], strlen(values[i]), 1, pFile);
-    }
-
-    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(int), SEEK_SET);
+    
+    // read num of columns
     int *temp_noc = malloc(sizeof(int));
-    fread(temp_noc, sizeof(int), 1, pFile);
-    printf("Num of columns: %d\n", *temp_noc);
-    free(temp_noc);
+    fseek(pFile, MAX_TABLE_NAME_LENGTH, SEEK_SET);
+    fread(temp_noc, sizeof(*temp_noc), 1, pFile);
 
     // read current num of entries 
-    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(int), SEEK_SET);
-    fread(&(tb->number_of_entries), sizeof(int), 1, pFile);
-    tb->number_of_entries ++;
-    printf("read num of entries: %d\n", tb->number_of_entries);
+    int *new_number_of_entries = malloc(sizeof(int));
+    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(*new_number_of_entries), SEEK_SET);
+    fread(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
+    (*new_number_of_entries) ++;
     
     // create new file to copy half of it 
     FILE *tempFile = fopen("DB_init.db/temp_file.bin", "wb"); // fopen("DB_init.db/<SELECTED_DB_NAME>/temp_file.bin", "wb");
@@ -195,29 +196,30 @@ void add_row (table *tb, char **values){
     char *buffer_front = malloc(position_in_file);
     rewind(pFile);
     fread(buffer_front, sizeof(char), position_in_file, pFile);
-    printf("Front_buffer\n%s\n", buffer_front);
-    fwrite(buffer_front, strlen(buffer_front), 1, tempFile);
-    
+    fwrite(buffer_front, MAX_TABLE_NAME_LENGTH + sizeof(*temp_noc), 1, tempFile);
+
     // Write updated value to file
-    printf("Newnum\n%d\n", tb->number_of_entries);
-    fwrite(&(tb->number_of_entries), sizeof(tb->number_of_entries), 1, tempFile);
-    
-    // Copy rest of file 
+    fwrite(new_number_of_entries, sizeof(*new_number_of_entries), 1, tempFile);
+    fseek(pFile, 0, SEEK_END);
+    int position_after_noe = ftell(tempFile);
 
     // length of file
     fseek(pFile, 0, SEEK_END);
-    long int length = ftell(pFile); // -MAX_TABLE_NAME_LENGTH - sizeof(int);
-    char * buffer_back = malloc(1024); // malloc(length)
-    rewind(pFile);
-    fseek(pFile, position_in_file + sizeof(int), SEEK_SET);
-    fread(buffer_back, length, 1, pFile);
-    printf("Back_buffer\n%s\n", buffer_back);
-    fwrite(buffer_back, length, 1, tempFile);
+    long int length = ftell(pFile); 
+
+    // Copy rest of file 
+    char * buffer_back = malloc(length - position_after_noe);
+    fread(buffer_back, sizeof(char), length - position_after_noe, pFile);
+    fwrite(buffer_back, length - position_after_noe, 1, tempFile);
     fseek(tempFile, 0, SEEK_END);
     position_in_file = ftell(tempFile);
     printf("Position in tempfile: %d\n", position_in_file);
 
-    // copy all the content of tempFile to pFile (with mode "wb+") (overwriting existing content in pFile)
+    // copy all the content of tempFile to pFile 
+    pFile = fopen(tb->file_name, "wb");
+    fwrite(buffer_front, MAX_TABLE_NAME_LENGTH + sizeof(*temp_noc), 1, pFile);
+    fwrite(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
+    fwrite(buffer_back, length - position_after_noe, 1, pFile);
     fclose(tempFile);
     fclose(pFile);
 }
@@ -282,6 +284,10 @@ table * create_table_from_file(char * filename){
     fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(tb->number_of_columns), SEEK_SET);
     fread(&(tb->number_of_entries), sizeof(int), 1, pFile);
     printf("Number of entries: %d\n", tb->number_of_entries);
+
+    // get length 
+    fseek(pFile, 0, SEEK_END);
+    printf("Length of file: %d\n", ftell(pFile));
 
     // get columns / headers 
 
