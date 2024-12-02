@@ -287,6 +287,12 @@ void add_row (table *tb, char **values){
     // update last Entry  
     fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*3), SEEK_SET);
     fwrite(pLastEntry, sizeof(*pLastEntry), 1, pFile);
+    printf("Last entry at location: %d\n", *pLastEntry);
+
+    // insert row-values 
+    fseek(pFile, *pLastEntry, SEEK_SET);
+    char * test_row_values = "Hi!";
+    fwrite(test_row_values, sizeof(test_row_values)*4, 1, pFile); // bug: writes test_row_values but deletes all values before 
     free(pLastEntry);
 
     fclose(tempFile);
@@ -358,7 +364,7 @@ table * create_table_from_file(char * filename){
     fseek(pFile, 0, SEEK_END);
     printf("Length of file: %d\n", ftell(pFile));
 
-    // last entry pointer 
+    // last entry pointer
     fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), SEEK_SET);
     int lep;
     fread(&lep, sizeof(lep), 1, pFile);
@@ -373,12 +379,11 @@ table * create_table_from_file(char * filename){
     int le;
     fread(&le, sizeof(le), 1, pFile);
     printf("Last entry: %d\n", le);
+    fseek(pFile, le, SEEK_SET);
+    char *last_entry_value = malloc(sizeof(char)* 4);
+    fread(last_entry_value, strlen(last_entry_value), 1, pFile);
+    printf("Read last entry: %s\n", last_entry_value - sizeof(char)*4);
 
-
-    // get columns / headers 
-
-
-    // get values 
     
 }
 
