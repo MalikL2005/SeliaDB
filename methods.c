@@ -225,7 +225,7 @@ void add_row (table *tb, char **values){
     (*last_index) ++;
 
     // increment last index pointer 
-    (*pLastIndex) += sizeof(int);
+    (*pLastIndex) += sizeof(int)*2;
     printf("new index location: %d\n", *pLastIndex);
 
     // read pLastEntry 
@@ -266,6 +266,7 @@ void add_row (table *tb, char **values){
     printf("Position in tempfile: %d\n", position_in_file);
 
     // copy all the content of tempFile to pFile 
+    fclose(pFile);
     pFile = fopen(tb->file_name, "wb");
     fwrite(buffer_front, MAX_TABLE_NAME_LENGTH + sizeof(*temp_noc), 1, pFile);
     free(buffer_front);
@@ -274,13 +275,23 @@ void add_row (table *tb, char **values){
     fwrite(buffer_back, length - position_after_noe, 1, pFile);
     free(buffer_back);
 
+    fclose(pFile);
+    pFile = fopen(tb->file_name, "rb+");
     // update last index pointer 
     fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), SEEK_SET);
     fwrite(pLastIndex, sizeof(*pLastIndex), 1, pFile);
     fseek(pFile, *pLastIndex, SEEK_SET);
     printf("Current pos @ %d\n", ftell(pFile));
+    // write index 
     fwrite(last_index, sizeof(*last_index), 1, pFile);
-    printf("Last index: %d\n", *pLastIndex);
+    printf("New current pos @ %d\n", ftell(pFile));
+    // write pointer to value after index 
+    fwrite(pLastEntry, sizeof(*pLastEntry), 1, pFile);
+    fseek(pFile, -sizeof(int), SEEK_CUR);
+    printf("New (2) current pos @ %d\n", ftell(pFile));
+    int num;
+    fread(&num, sizeof(num), 1, pFile);
+    printf("Read num %d\n", num);
     free(last_index);
     free(pLastIndex);
 
@@ -291,8 +302,15 @@ void add_row (table *tb, char **values){
 
     // insert row-values 
     fseek(pFile, *pLastEntry, SEEK_SET);
-    char * test_row_values = "Hi!";
-    fwrite(test_row_values, sizeof(test_row_values)*4, 1, pFile); // bug: writes test_row_values but deletes all values before 
+    char * test_row_values = "Edos";
+    // still need to adjust size 
+    fwrite(test_row_values, sizeof(char)*4, 1, pFile); // bug: writes test_row_values but deletes all values before 
+    char * buffer_values = malloc(FILE_SIZE - (*pLastEntry));
+
+    fseek(pFile, *pLastEntry, SEEK_SET);
+    printf("Reading %d Bytes from %d\n", (FILE_SIZE - (*pLastEntry)), *pLastEntry);
+    fread(buffer_values, (FILE_SIZE - (*pLastEntry)), 1, pFile);
+    printf("Read buffer values: %s\n", buffer_values);
     free(pLastEntry);
 
     fclose(tempFile);
@@ -348,37 +366,50 @@ table * create_table_from_file(char * filename){
     table *tb = malloc(sizeof(table));
     // get name of table 
     fread(tb->name, sizeof(char), MAX_TABLE_NAME_LENGTH, pFile);
-    printf("table_name: %s\n", tb->name);
+    printf("%d: table_name: %s\n", ftell(pFile), tb->name);
 
     // get number_of_columns
     fseek(pFile, MAX_TABLE_NAME_LENGTH, SEEK_SET);
     fread(&(tb->number_of_columns), sizeof(int), 1, pFile);
-    printf("Number of cols: %d\n", tb->number_of_columns);
+    printf("%d: Number of cols: %d\n", ftell(pFile), tb->number_of_columns);
 
     // get number_of_entries 
     fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(tb->number_of_columns), SEEK_SET);
     fread(&(tb->number_of_entries), sizeof(int), 1, pFile);
-    printf("Number of entries: %d\n", tb->number_of_entries);
+    printf("%d: Number of entries: %d\n", ftell(pFile),tb->number_of_entries);
 
     // get length 
     fseek(pFile, 0, SEEK_END);
     printf("Length of file: %d\n", ftell(pFile));
 
-    // last entry pointer
+    // last index 
     fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), SEEK_SET);
     int lep;
     fread(&lep, sizeof(lep), 1, pFile);
-    printf("Last index location: %d\n", lep);
+    printf("%d: Last index location: %d\n", ftell(pFile), lep);
     fseek(pFile, lep, SEEK_SET);
-    int test;
-    fread(&test, sizeof(test), 1, pFile);
-    printf("Last index value: %d\n", test);
+    int* last_index_value = malloc(sizeof(int));
+    fread(last_index_value, sizeof(*last_index_value), 1, pFile);
+    printf("%d: Last index value: %d\n", ftell(pFile), *last_index_value);
+
+    // last index (pointer to entry)
+    int index; 
+    int index_entry_offset;
+    printf("\n");
+    for (int i=0; i<= *last_index_value; i++){
+        fseek(pFile, START_ENTRY_POINTERS + (i*sizeof(int)*2), SEEK_SET);
+        printf("Reading index at byte %d\t", ftell(pFile));
+        fread(&index, sizeof(index), 1, pFile);
+        printf("Index: %d\t", index);
+        fread(&index, sizeof(index), 1, pFile);
+        printf("%d: Entry at: %d\n", ftell(pFile), index_entry_offset);
+    }
 
     // last entry 
     fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*3), SEEK_SET);
     int le;
     fread(&le, sizeof(le), 1, pFile);
-    printf("Last entry: %d\n", le);
+    printf("%d: Last entry: %d\n", ftell(pFile), le);
     fseek(pFile, le, SEEK_SET);
     char *last_entry_value = malloc(sizeof(char)* 4);
     fread(last_entry_value, strlen(last_entry_value), 1, pFile);
