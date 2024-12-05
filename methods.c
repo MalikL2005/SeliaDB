@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <add_entry.c>
 
 
 typedef struct {
@@ -211,6 +212,12 @@ void add_row (table *tb, char **values){
     fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(*new_number_of_entries), SEEK_SET);
     fread(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
     (*new_number_of_entries) ++;
+    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(*new_number_of_entries), SEEK_SET);
+    fwrite(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
+    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(*new_number_of_entries), SEEK_SET);
+    fread(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
+    printf("New number of entries: %d\n", *new_number_of_entries);
+    
 
     // read pointer LastIndex
     int *pLastIndex = malloc(sizeof(int));
@@ -265,21 +272,13 @@ void add_row (table *tb, char **values){
     position_in_file = ftell(tempFile);
     printf("Position in tempfile: %d\n", position_in_file);
 
-    // copy all the content of tempFile to pFile 
-    fclose(pFile);
-    pFile = fopen(tb->file_name, "wb");
-    fwrite(buffer_front, MAX_TABLE_NAME_LENGTH + sizeof(*temp_noc), 1, pFile);
-    free(buffer_front);
-    fwrite(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
-    free(new_number_of_entries);
-    fwrite(buffer_back, length - position_after_noe, 1, pFile);
-    free(buffer_back);
 
     fclose(pFile);
     pFile = fopen(tb->file_name, "rb+");
     // update last index pointer 
     fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), SEEK_SET);
-    fwrite(pLastIndex, sizeof(*pLastIndex), 1, pFile);
+    //fwrite(pLastIndex, sizeof(*pLastIndex), 1, pFile);
+    putw(*pLastIndex, pFile);
     fseek(pFile, *pLastIndex, SEEK_SET);
     printf("Current pos @ %d\n", ftell(pFile));
     // write index 
