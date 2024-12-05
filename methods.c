@@ -7,8 +7,12 @@
 #define MAX_COLUMNS 100
 #define MAX_DATABASES 5
 #define MAX_ROWS 200
-#define START_ENTRY_POINTERS MAX_TABLE_NAME_LENGTH + sizeof(int)*4
 #define FILE_SIZE 1024
+#define LOCATION_NUMBER_OF_COLUMNS MAX_TABLE_NAME_LENGTH
+#define LOCATION_NUMBER_OF_ENTRIES MAX_TABLE_NAME_LENGTH + sizeof(int)
+#define LOCATION_LAST_INDEX_POINTER MAX_TABLE_NAME_LENGTH + sizeof(int)*2
+#define LOCATION_LAST_ENTRY_POINTER MAX_TABLE_NAME_LENGTH + sizeof(int)*3
+#define START_ENTRY_POINTERS MAX_TABLE_NAME_LENGTH + sizeof(int)*4
 
 #include <string.h>
 #include <stdio.h>
@@ -19,7 +23,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <add_entry.c>
+#include "add_entry.c"
 
 
 typedef struct {
@@ -161,16 +165,7 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     fseek(fileptr, START_ENTRY_POINTERS, SEEK_SET);
     fwrite(&(new_table->test_index), sizeof(int), 1, fileptr);
     // create dummy columns values 
-    char ** values = malloc(sizeof(char*)*number_of_columns);
     printf("Here\n");
-    for (int i=0; i<number_of_columns; i++){
-        values[i] = malloc(MAX_COLUMN_NAME_LENGTH);
-        strcpy(values[i], "Column Number");
-    }
-
-    for (int i=0; i<number_of_columns; i++){
-        fwrite(values[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
-    }
 
     // write pointer to last Entry 
     int *pLastEntry = malloc(sizeof(int));
@@ -207,17 +202,13 @@ void add_row (table *tb, char **values){
     fread(temp_noc, sizeof(*temp_noc), 1, pFile);
     free(temp_noc);
 
-    // read current num of entries 
+    // increment number of entries 
     int *new_number_of_entries = malloc(sizeof(int));
+    increment_number_of_entries(pFile);
     fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(*new_number_of_entries), SEEK_SET);
     fread(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
-    (*new_number_of_entries) ++;
-    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(*new_number_of_entries), SEEK_SET);
-    fwrite(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
-    fseek(pFile, MAX_TABLE_NAME_LENGTH + sizeof(*new_number_of_entries), SEEK_SET);
-    fread(new_number_of_entries, sizeof(*new_number_of_entries), 1, pFile);
-    printf("New number of entries: %d\n", *new_number_of_entries);
-    
+    printf("New number of entries: %d\n", *new_number_of_entries); 
+
 
     // read pointer LastIndex
     int *pLastIndex = malloc(sizeof(int));
@@ -234,6 +225,8 @@ void add_row (table *tb, char **values){
     // increment last index pointer 
     (*pLastIndex) += sizeof(int)*2;
     printf("new index location: %d\n", *pLastIndex);
+    // update_last_index(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), );
+ 
 
     // read pLastEntry 
     int *pLastEntry = malloc(sizeof(int));
@@ -242,38 +235,7 @@ void add_row (table *tb, char **values){
     printf("Last entry: %d\n", *pLastEntry);
     (*pLastEntry) -= sizeof(int); // -= SIZEOF(ENTRY)
     printf("new entry: %d\n", *pLastEntry);
-    
-    // create new file to copy half of it 
-    FILE *tempFile = fopen("DB_init.db/temp_file.bin", "wb"); // fopen("DB_init.db/<SELECTED_DB_NAME>/temp_file.bin", "wb");
-    if (!tempFile){
-        printf("Error: Could not create temporary file.\n");
-        return; 
-    }
-    long position_in_file = ftell(pFile) - sizeof(int);
-    char *buffer_front = malloc(position_in_file);
-    rewind(pFile);
-    fread(buffer_front, sizeof(char), position_in_file, pFile);
-    fwrite(buffer_front, MAX_TABLE_NAME_LENGTH + sizeof(*temp_noc), 1, tempFile);
 
-    // Write updated value to file
-    fwrite(new_number_of_entries, sizeof(*new_number_of_entries), 1, tempFile);
-    fseek(pFile, 0, SEEK_END);
-    int position_after_noe = ftell(tempFile);
-
-    // length of file
-    fseek(pFile, 0, SEEK_END);
-    long int length = ftell(pFile); 
-
-    // Copy rest of file 
-    char * buffer_back = malloc(length - position_after_noe);
-    fread(buffer_back, sizeof(char), length - position_after_noe, pFile);
-    fwrite(buffer_back, length - position_after_noe, 1, tempFile);
-    fseek(tempFile, 0, SEEK_END);
-    position_in_file = ftell(tempFile);
-    printf("Position in tempfile: %d\n", position_in_file);
-
-
-    fclose(pFile);
     pFile = fopen(tb->file_name, "rb+");
     // update last index pointer 
     fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), SEEK_SET);
@@ -285,6 +247,8 @@ void add_row (table *tb, char **values){
     fwrite(last_index, sizeof(*last_index), 1, pFile);
     printf("New current pos @ %d\n", ftell(pFile));
     // write pointer to value after index 
+    fseek(pFile, *pLastIndex +sizeof(int), SEEK_SET);
+    printf("pLastEntry: %d\n", *pLastEntry);
     fwrite(pLastEntry, sizeof(*pLastEntry), 1, pFile);
     fseek(pFile, -sizeof(int), SEEK_CUR);
     printf("New (2) current pos @ %d\n", ftell(pFile));
@@ -312,7 +276,6 @@ void add_row (table *tb, char **values){
     printf("Read buffer values: %s\n", buffer_values);
     free(pLastEntry);
 
-    fclose(tempFile);
     fclose(pFile);
 }
 
@@ -400,8 +363,9 @@ table * create_table_from_file(char * filename){
         printf("Reading index at byte %d\t", ftell(pFile));
         fread(&index, sizeof(index), 1, pFile);
         printf("Index: %d\t", index);
+        printf("%d - ", ftell(pFile));
         fread(&index, sizeof(index), 1, pFile);
-        printf("%d: Entry at: %d\n", ftell(pFile), index_entry_offset);
+        printf("Entry at: %d\n", ftell(pFile), index);
     }
 
     // last entry 
