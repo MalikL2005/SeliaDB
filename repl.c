@@ -111,11 +111,29 @@ int handle_command(InputBuffer* buffer, database **pCurrent_db, database *DBS[])
         if (*pCurrent_db){
             printf("\nCreating table in %s\n", (*pCurrent_db)->name);
             char *new_table_name = malloc(MAX_TABLE_NAME_LENGTH);
+            int *number_of_columns = malloc(sizeof(int));
             printf("Name for new table: ");
             scanf("%s", new_table_name);
-            printf("Assigned name, %s\n", new_table_name);
+            printf("Assigned name, %s\n", new_table_name); // Make sure that name does not exist already 
+            printf("Number of columns: ");
+            scanf("%d", number_of_columns);
+            printf("%d many columns.\n", *number_of_columns);
+            if (*number_of_columns > MAX_COLUMNS || *number_of_columns <= 0){
+                printf("Error: Invalid column number. Could not create table.\n");
+                return 0; 
+            }
+            // read column names & types 
+            char * column_names[*number_of_columns];
 
-            table *new_table = create_table(pCurrent_db, new_table_name, 3);
+            for (int i=0; i<*number_of_columns; i++){
+                column_names[i] = malloc(MAX_COLUMN_NAME_LENGTH);
+                printf("%d) Column name: ", i+1);
+                scanf("%s", column_names[i]);
+                printf("result: %s\n", column_names[i]);
+            }
+
+
+            table *new_table = create_table(pCurrent_db, new_table_name, number_of_columns, column_names);
             printf("Currents new table: %s\n", (*pCurrent_db)->tables[0]->name);
         } 
         else {

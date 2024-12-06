@@ -4,9 +4,9 @@
 #define MAX_TABLE_NAME_LENGTH 10
 #define MAX_COLUMN_NAME_LENGTH 32
 #define MAX_INDEX_NAME_LENGTH 32
-#define MAX_COLUMNS 100
+#define MAX_COLUMNS 10
 #define MAX_DATABASES 5
-#define MAX_ROWS 200
+#define MAX_ROWS 20
 #define FILE_SIZE 1024
 #define LOCATION_NUMBER_OF_COLUMNS MAX_TABLE_NAME_LENGTH
 #define LOCATION_NUMBER_OF_ENTRIES MAX_TABLE_NAME_LENGTH + sizeof(int)
@@ -42,7 +42,7 @@ typedef struct {
 typedef struct {
     char name [MAX_TABLE_LENGTH];
     int number_of_columns; 
-    column *columns[MAX_COLUMNS]; // *columns[number_of_columns]
+    column *columns[MAX_TABLES];
     int number_of_entries;
     table_row *rows[MAX_ROWS];
     table_row *last_row; 
@@ -55,7 +55,7 @@ typedef struct {
 
 
 typedef struct {
-    char name[32];
+    char name[MAX_DB_NAME_LENGTH];
     table *tables[MAX_TABLES];
 } database;
 
@@ -117,7 +117,7 @@ database *create_db(char *name){
 }
 
 
-table *create_table(database **pDb, char *table_name, int number_of_columns){
+table *create_table(database **pDb, char *table_name, int *number_of_columns, char *column_names[MAX_COLUMNS]){
 
     // Create table-file in current_DB dir 
     FILE *fileptr;
@@ -143,7 +143,7 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
     // Create new table 
     table *new_table = (table *) malloc(sizeof(table) + 4);
     strcpy(new_table->name, table_name);
-    new_table->number_of_columns = number_of_columns;
+    new_table->number_of_columns = *number_of_columns;
     new_table->table_file = fileptr;
     new_table->file_name = new_table_file; 
     new_table->number_of_entries = 0;
@@ -156,15 +156,18 @@ table *create_table(database **pDb, char *table_name, int number_of_columns){
             break;
         }
     }
+    // column names 
+    for (int i=0; i<*number_of_columns; i++){
+        printf("%s\n", column_names[i]);
+    }
 
     // Writing to fileptr 
-    int * pNum_of_cols = &number_of_columns;
+    int * pNum_of_cols = number_of_columns;
     fwrite(table_name, MAX_TABLE_NAME_LENGTH, 1, fileptr); // table-name
     fwrite(&(new_table->number_of_columns), sizeof(int), 1, fileptr); // number of cols 
     fwrite(&(new_table->number_of_entries), sizeof(int), 1, fileptr); //number of entries
     fseek(fileptr, START_ENTRY_POINTERS, SEEK_SET);
     fwrite(&(new_table->test_index), sizeof(int), 1, fileptr);
-    // create dummy columns values 
     printf("Here\n");
 
     // write pointer to last Entry 
