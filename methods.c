@@ -225,9 +225,7 @@ void add_row (table *tb, char **values){
     // increment last index pointer 
     (*pLastIndex) += sizeof(int)*2;
     printf("new index location: %d\n", *pLastIndex);
-    // update_last_index(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*2), );
- 
-
+    update_last_index(pFile);
     // read pLastEntry 
     int *pLastEntry = malloc(sizeof(int));
     fseek(pFile, (MAX_TABLE_NAME_LENGTH + sizeof(int)*3), SEEK_SET);
@@ -364,8 +362,8 @@ table * create_table_from_file(char * filename){
         fread(&index, sizeof(index), 1, pFile);
         printf("Index: %d\t", index);
         printf("%d - ", ftell(pFile));
-        fread(&index, sizeof(index), 1, pFile);
-        printf("Entry at: %d\n", ftell(pFile), index);
+        fread(&index_entry_offset, sizeof(index_entry_offset), 1, pFile);
+        printf("Entry at: %d\n", ftell(pFile), index_entry_offset);
     }
 
     // last entry 

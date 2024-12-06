@@ -84,6 +84,7 @@ int update_last_index(FILE *pFile){
 
     // write pointer to entry (after index) 
     fseek(pFile, *pLastIndex + sizeof(int), SEEK_SET);
+    printf("Writing %d at byte %d\n", *pEntry, ftell(pFile));
     fwrite(pEntry, sizeof(*pEntry), 1, pFile);
 
     // update pointer to last_index 
