@@ -7,7 +7,7 @@
 #define MAX_COLUMNS 10
 #define MAX_DATABASES 5
 #define MAX_ROWS 20
-#define FILE_SIZE 1024
+#define FILE_SIZE 2048
 #define LOCATION_NUMBER_OF_COLUMNS MAX_TABLE_NAME_LENGTH
 #define LOCATION_NUMBER_OF_ENTRIES MAX_TABLE_NAME_LENGTH + sizeof(int)
 #define LOCATION_FIRST_INDEX_POINTER MAX_TABLE_NAME_LENGTH + sizeof(int)*2
@@ -48,7 +48,7 @@ typedef struct {
     table_row *last_row; 
     FILE *table_file;
     char *file_name; 
-    int * pLastEntry;
+    int pLastEntry;
     int * pFirstIndex; 
     int * pLastIndex;
     int test_index; 
@@ -120,6 +120,11 @@ database *create_db(char *name){
 
 table *create_table(database **pDb, char *table_name, int *number_of_columns, char *column_names[MAX_COLUMNS]){
 
+    if (strlen(table_name) > MAX_TABLE_NAME_LENGTH){
+        printf("Error: Table name is too long.\n");
+        return NULL; 
+    }
+
     // Create table-file in current_DB dir 
     FILE *fileptr;
     char * new_table_file = malloc(sizeof(table_name) + sizeof("DB_init.db/") + sizeof((*pDb)->name)+5);
@@ -149,6 +154,7 @@ table *create_table(database **pDb, char *table_name, int *number_of_columns, ch
     new_table->file_name = new_table_file; 
     new_table->number_of_entries = 0;
     new_table->test_index = 0; 
+    new_table->pLastEntry = FILE_SIZE;
     // Add table to DB 
     for (int i = 0; i<MAX_TABLES; i++){
         if (!(*pDb)->tables[i]){
@@ -174,15 +180,10 @@ table *create_table(database **pDb, char *table_name, int *number_of_columns, ch
     fwrite(&(new_table->number_of_entries), sizeof(int), 1, fileptr); //number of entries
 
     // write pointer to last Entry Some issue :(
-    int *pLastEntry = malloc(sizeof(int));
-    *pLastEntry = FILE_SIZE;
-    printf("Read %d\n", *pLastEntry);
+    int test_write = FILE_SIZE; 
+    printf("LAST ENTRY: %d\n", test_write);
     fseek(fileptr, LOCATION_LAST_ENTRY_POINTER, SEEK_SET);
-    fwrite(pLastEntry, sizeof(int), 1, fileptr);
-    int test; 
-    fseek(fileptr, LOCATION_LAST_ENTRY_POINTER, SEEK_SET);
-    fread(&test, sizeof(test), 1, fileptr);
-    printf("Wrote to file lep: %d\n", test);
+    fwrite(&test_write, sizeof(int), 1, fileptr);
 
     // write pointer to first & last index
     int * pLastIndex= malloc(sizeof(int));
@@ -195,10 +196,11 @@ table *create_table(database **pDb, char *table_name, int *number_of_columns, ch
     fwrite(pLastIndex, sizeof(*pLastIndex), 1, fileptr);
 
     // write column names 
+    fseek(fileptr, LOCATION_LAST_ENTRY_POINTER + sizeof(int), SEEK_SET);
     for (int i=0; i<*number_of_columns; i++){
         printf("%d) %s\n", i, column_names[i]);
-        fwrite(column_names[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
-        // fwrite(column_names[i], strlen(column_names[i]), 1, fileptr);
+        // fwrite(column_names[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
+        fwrite(column_names[i], strlen(column_names[i]) +1, 1, fileptr);
         // fwrite('\0', sizeof(char), 1, fileptr);
     }
 
@@ -361,6 +363,25 @@ table * create_table_from_file(char * filename){
     fread(&(tb->number_of_columns), sizeof(int), 1, pFile);
     printf("%d: Number of cols: %d\n", ftell(pFile), tb->number_of_columns);
 
+    // Column_names 
+    char ** columns = malloc(sizeof(char*) * tb->number_of_columns);
+    fseek(pFile, LOCATION_LAST_ENTRY_POINTER+sizeof(int), SEEK_SET);
+    char * temp = malloc(sizeof(char));
+    int start;
+
+    // Read each character until \0 
+    // Then read all previous chars to memory 
+    for (int i=0; i<tb->number_of_columns; i++){
+        start = 0; 
+        do {
+            fread(temp, sizeof(char), 1, pFile);
+            start ++; 
+        } while(*temp != '\0');
+        *(columns + i) = malloc(start * sizeof(char));
+        fread(*(columns +i), start*sizeof(char), 1, pFile);
+        printf("Column name %d) %s\n", i+1, *(columns+i));
+    }
+
     // number_of_entries 
     fseek(pFile, LOCATION_NUMBER_OF_ENTRIES, SEEK_SET);
     fread(&(tb->number_of_entries), sizeof(int), 1, pFile);
@@ -384,9 +405,9 @@ table * create_table_from_file(char * filename){
     fseek(pFile, LOCATION_LAST_ENTRY_POINTER, SEEK_SET);
     fread(&(tb->pLastEntry), sizeof(int), 1, pFile);
     printf("%d: Last entry: %d\n", ftell(pFile), tb->pLastEntry);
-    fseek(pFile, *(tb->pLastEntry), SEEK_SET);
-    char *last_entry_value = malloc(sizeof(char)* 4);
-    fread(last_entry_value, strlen(last_entry_value), 1, pFile);
-    printf("Read last entry: %s\n", last_entry_value - sizeof(char)*4);
+    //fseek(pFile, tb->pLastEntry, SEEK_SET);
+    //char *last_entry_value = malloc(sizeof(char)* 4);
+    //fread(last_entry_value, strlen(last_entry_value), 1, pFile);
+    //printf("Read last entry: %s\n", last_entry_value - sizeof(char)*4);
 }
 
