@@ -25,10 +25,16 @@
 #include <dirent.h>
 #include "add_entry.c"
 
+enum DATATYPE {
+    INT, 
+    VARCHAR, 
+    BOOLEAN, 
+    FLOAT
+};
 
 typedef struct {
     char name [MAX_COLUMN_NAME_LENGTH];
-    char type[20];
+    enum DATATYPE datatype; 
 } column; 
 
 
@@ -38,6 +44,20 @@ typedef struct {
     struct table_row *next_row; 
     struct table *table_meta_data;
 } table_row;
+
+
+typedef struct {
+    int size; 
+    char * value; 
+} varchar_entry;
+
+typedef struct {
+    int value; 
+} int_entry;
+
+typedef struct {
+    float value; 
+} float_entry;
 
 
 typedef struct {
@@ -61,12 +81,6 @@ typedef struct {
     table *tables[MAX_TABLES];
 } database;
 
-enum data_types {
-    INT, 
-    VARCHAR, 
-    BOOLEAN, 
-    FLOAT
-}
 
 void check_for_init_folder(){
     DIR* dir = opendir("./DB_init.db");
@@ -125,7 +139,7 @@ database *create_db(char *name){
 }
 
 
-table *create_table(database **pDb, char *table_name, int *number_of_columns, char *column_names[MAX_COLUMNS]){
+table *create_table(database **pDb, char *table_name, int number_of_columns, char *column_names[MAX_COLUMNS], enum DATATYPE * datatypes){
 
     if (strlen(table_name) > MAX_TABLE_NAME_LENGTH){
         printf("Error: Table name is too long.\n");
@@ -156,7 +170,7 @@ table *create_table(database **pDb, char *table_name, int *number_of_columns, ch
     // Create new table 
     table *new_table = (table *) malloc(sizeof(table) + 4);
     strcpy(new_table->name, table_name);
-    new_table->number_of_columns = *number_of_columns;
+    new_table->number_of_columns = number_of_columns;
     new_table->table_file = fileptr;
     new_table->file_name = new_table_file; 
     new_table->number_of_entries = 0;
@@ -170,13 +184,16 @@ table *create_table(database **pDb, char *table_name, int *number_of_columns, ch
             break;
         }
     }
-    // column names 
-    for (int i=0; i<*number_of_columns; i++){
-        printf("%s\n", column_names[i]);
+
+    // Create columns 
+    printf("Column names + types");
+    for (int i=0; i<number_of_columns; i++){
+        column * new_col = malloc(sizeof(column));
+        printf("%s: %d\n", column_names[i], *(datatypes + i));
     }
 
     // Writing to file 
-    int * pNum_of_cols = number_of_columns;
+    int * pNum_of_cols = &number_of_columns;
     fseek(fileptr, 0, SEEK_SET);
     fwrite(table_name, MAX_TABLE_NAME_LENGTH, 1, fileptr); // table-name
 
@@ -194,7 +211,7 @@ table *create_table(database **pDb, char *table_name, int *number_of_columns, ch
 
     // write pointer to first & last index
     int * pLastIndex= malloc(sizeof(int));
-    *pLastIndex = LOCATION_LAST_ENTRY_POINTER + MAX_COLUMN_NAME_LENGTH * (*number_of_columns);
+    *pLastIndex = LOCATION_LAST_ENTRY_POINTER + MAX_COLUMN_NAME_LENGTH * (number_of_columns);
     fseek(fileptr, LOCATION_FIRST_INDEX_POINTER, SEEK_SET);
     printf("Current position: %d\n", ftell(fileptr));
     printf("START_INDEX_VALUES: %d\n", *pLastIndex);
@@ -204,7 +221,7 @@ table *create_table(database **pDb, char *table_name, int *number_of_columns, ch
 
     // write column names 
     fseek(fileptr, LOCATION_LAST_ENTRY_POINTER + sizeof(int), SEEK_SET);
-    for (int i=0; i<*number_of_columns; i++){
+    for (int i=0; i<number_of_columns; i++){
         printf("%d) %s\n", i, column_names[i]);
         // fwrite(column_names[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
         fwrite(column_names[i], strlen(column_names[i])+1, 1, fileptr);
