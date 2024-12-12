@@ -34,6 +34,7 @@ typedef struct {
 
 typedef struct {
     char ** values; 
+    int row_id; 
     struct table_row *next_row; 
     struct table *table_meta_data;
 } table_row;
@@ -60,6 +61,12 @@ typedef struct {
     table *tables[MAX_TABLES];
 } database;
 
+enum data_types {
+    INT, 
+    VARCHAR, 
+    BOOLEAN, 
+    FLOAT
+}
 
 void check_for_init_folder(){
     DIR* dir = opendir("./DB_init.db");
