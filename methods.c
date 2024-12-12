@@ -200,8 +200,8 @@ table *create_table(database **pDb, char *table_name, int *number_of_columns, ch
     for (int i=0; i<*number_of_columns; i++){
         printf("%d) %s\n", i, column_names[i]);
         // fwrite(column_names[i], MAX_COLUMN_NAME_LENGTH, 1, fileptr);
-        fwrite(column_names[i], strlen(column_names[i]) +1, 1, fileptr);
-        // fwrite('\0', sizeof(char), 1, fileptr);
+        fwrite(column_names[i], strlen(column_names[i])+1, 1, fileptr);
+        // fwrite('\0', sizeof('\0'), 1, fileptr);
     }
 
     fclose(fileptr);
@@ -367,20 +367,26 @@ table * create_table_from_file(char * filename){
     char ** columns = malloc(sizeof(char*) * tb->number_of_columns);
     fseek(pFile, LOCATION_LAST_ENTRY_POINTER+sizeof(int), SEEK_SET);
     char * temp = malloc(sizeof(char));
+    //int * start = malloc(sizeof(int));
     int start;
+    int * start_offset = malloc(sizeof(int));
 
     // Read each character until \0 
     // Then read all previous chars to memory 
     for (int i=0; i<tb->number_of_columns; i++){
+        *start_offset = ftell(pFile);
         start = 0; 
         do {
             fread(temp, sizeof(char), 1, pFile);
             start ++; 
         } while(*temp != '\0');
         *(columns + i) = malloc(start * sizeof(char));
+        fseek(pFile, *start_offset, SEEK_SET);
         fread(*(columns +i), start*sizeof(char), 1, pFile);
         printf("Column name %d) %s\n", i+1, *(columns+i));
     }
+    //free(start);
+    free(start_offset);
 
     // number_of_entries 
     fseek(pFile, LOCATION_NUMBER_OF_ENTRIES, SEEK_SET);
