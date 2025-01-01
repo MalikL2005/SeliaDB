@@ -3,9 +3,12 @@
 *
 *
 * btree.c
-* This file is used to create and manage a btree.
+* This file is used to create and manage the database's btrees.
 * Btrees are used to store indexes in the database.
-* This file includes the functions that are needed to traverse the 
+* This file includes the functions that are needed to:
+*	- create a new btree
+*	- traverse a tree
+*	- find a value
 *
 *
 *
@@ -23,7 +26,7 @@
 void traverse(struct node *current);
 bool findValue(int value, struct node * current);
 
-//
+
 struct btree {
 	char * name;
 	struct node * root;
@@ -39,6 +42,9 @@ void main(){
 		insert(i, root);
 	}
 	traverse(root);
+	findValue(5, root);
+	findValue(99, root);
+	findValue(199, root);
 }
 
 
@@ -59,5 +65,35 @@ void traverse(struct node *current){
 
 
 bool findValue(int value, struct node * current){
-
+	// iterate over values in current
+	int i;
+	for (i=0; i<MAX_KEYS && current->keys[i] != 0; i++){
+		if (current->keys[i] == value){
+			printf("%d has been found at node: %d %d %d\n", value, current->keys[0], current->keys[1], current->keys[2]);
+			return true; 
+			/*
+			* for future functionality, it may be better to change the return type from bool to node *.
+			* To check if the value exists, after calling findValue(in main-function or wherever), 
+			* check if findValue() == NULL (-> value is not found).
+			*/
+		}
+		else if (value < current->keys[i]){
+			// leaf node
+			if (current->children[0] == NULL) {
+				printf("Value %d has not been found.\n", value);
+				return false;
+			}
+			// current node has children
+			return findValue(value, current->children[i]);
+		}
+	}
+	// leaf node 
+	if (current->children[0] == NULL) {
+		printf("Value %d has not been found.\n", value);
+		return false;
+	}
+	// current node has children
+	if (value > current->keys[i]) return findValue(value, current->children[i]);
+	printf("Value %d has not been found.\n", value);
+	return false;
 }
