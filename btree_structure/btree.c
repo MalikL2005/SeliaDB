@@ -1,9 +1,11 @@
 /*
+*
+*
+*
 * btree.c
-* This file is ised to create and manage a btree.
+* This file is used to create and manage a btree.
 * Btrees are used to store indexes in the database.
 * This file includes the functions that are needed to traverse the 
-*
 *
 *
 *

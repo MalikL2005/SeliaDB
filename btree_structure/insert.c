@@ -1,5 +1,12 @@
-/* Insert.c 
+/* 
+ *
+ *
+ *
+ * Insert.c 
  * This file includes all definitions and functions that are needed for insertion in the btree-structrue.
+ *
+ *
+ *
 */
 
 
