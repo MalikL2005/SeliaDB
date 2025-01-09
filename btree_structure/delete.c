@@ -21,7 +21,7 @@
 * returns 0 if value has been removed successfully.
 * returns 1 if an error occured.
 */
-inline int delete(int value){
+int delete(int value){
 	printf("Removing %d from tree\n", value);
 
 	// find node
@@ -123,7 +123,7 @@ inline int delete(int value){
  *
  *
  */
-inline int pushChildUpLeft(node * current, int i_greatest_left, int i_value){
+int pushChildUpLeft(node * current, int i_greatest_left, int i_value){
 	printf("Pushing left child up\n");
 
 	// find child-node with closest value
@@ -154,7 +154,7 @@ inline int pushChildUpLeft(node * current, int i_greatest_left, int i_value){
 /*
  * similar to pushCildUpLeft; is used, when the right child of a parent node needs to be pushed to the level of the parent node.
  */
-inline int pushChildUpRight(node * current, int i_right_child, int i_value){
+int pushChildUpRight(node * current, int i_right_child, int i_value){
 	printf("Pushing right child up\n");
 
 	// find child-node with closest value
@@ -189,7 +189,7 @@ inline int pushChildUpRight(node * current, int i_right_child, int i_value){
 * returns 0 if the sibling-node has successfully been borrowed from (This also concludes the deletion process).
 * return 1 if an error occured (So deletion did not happen).
 */
-inline int borrowValueFromSibling(int value, node * current){
+int borrowValueFromSibling(int value, node * current){
 	node * parent = findParent(current, root);
 
 	// find index of current in parent
@@ -238,7 +238,7 @@ inline int borrowValueFromSibling(int value, node * current){
 * sibling -> delete-value
 * For return-scenarios see comment above functions borrowValueFromSibling() and removeValueFromNode().
 */
-inline int switchBorrowedValue(node * parent, int childIndex, bool sibling_is_left, int value, int i_sibling){
+int switchBorrowedValue(node * parent, int childIndex, bool sibling_is_left, int value, int i_sibling){
 	printf("sBV->child: %d\n", parent->children[childIndex]->keys[0]);
 	int borrowed_value;
 	int parent_value;
@@ -300,7 +300,7 @@ inline int switchBorrowedValue(node * parent, int childIndex, bool sibling_is_le
 * returns 0 if removal was successfull.
 * returns 1 if an error occured.
 */
-inline int removeValueFromNode(int value, node * current, int index_value){
+int removeValueFromNode(int value, node * current, int index_value){
 	if (index_value < 0) index_value = getNodeIndex(current, value);
 	if (getIndexGreatestValue(current) < MIN_KEYS) return 1;
 	// shift array to left
@@ -317,7 +317,7 @@ inline int removeValueFromNode(int value, node * current, int index_value){
 * returns 0 if child was pushed up successfully.
 * returns 1 if error occured.
 */
-inline int pushChildUp(node * current, int value, int index, int child_index, bool child_is_left){
+int pushChildUp(node * current, int value, int index, int child_index, bool child_is_left){
 	printf("index: %d, child-index: %d\n", index, child_index);
 	int child_value;
 	int rem;
@@ -348,7 +348,7 @@ inline int pushChildUp(node * current, int value, int index, int child_index, bo
 * Function that merges two children, if the parent in between them is deleted.
 * for return-scenarios, view removeValueFromNode().
 */
-inline int mergeChildren(node * current, int value, int index){
+int mergeChildren(node * current, int value, int index){
 	printf("Merging: \n");
 	printf("\t%d %d %d\n", current->children[index]->keys[0], current->children[index]->keys[1], current->children[index]->keys[2]);
 	printf("\t%d %d %d\n", current->children[index + 1]->keys[0], current->children[index + 1]->keys[1], current->children[index + 1]->keys[2]);
@@ -384,7 +384,7 @@ inline int mergeChildren(node * current, int value, int index){
 *
 *
 */
-inline int mergeParentAndChild(node * current, int value){
+int mergeParentAndChild(node * current, int value){
 	printf("ABC Current: %d\n", current->keys[0]);
 	node * parent = findParent(current, root);
 
