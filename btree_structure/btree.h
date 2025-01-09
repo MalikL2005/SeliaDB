@@ -27,10 +27,6 @@ struct node * root;
 
 #define MAX_BTREE_NAME_LENGTH 32
 
-//#ifndef INSERT_H
-//#include "insert.h"
-//#endif
-
 
 void traverse(node *current);
 node * findValue(int value, node * current);
@@ -39,12 +35,9 @@ int getIndexGreatestValue(node * current);
 
 
 
-struct btree {
+typedef struct btree {
 	char * name;
 	struct node * root;
-	char * fileName;
-	int MIN_CHILDREN;
-	int ENTRY_SIZE;
-};
+} btree;
 
 #endif

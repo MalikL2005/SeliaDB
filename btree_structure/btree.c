@@ -24,6 +24,8 @@
 void main(){
 	// struct btree * mybtree = malloc(sizeof(struct btree));
 	// mybtree->name ="Edos_whoo";
+	btree * index = malloc(sizeof(btree));
+	root = index->root;
 	for (int i=1; i<=10; i++){
 		insert(i, root);
 	}
@@ -41,6 +43,11 @@ void main(){
 	traverse(root);
 	printf("Deletion call of 8\n");
 	delete(8);
+	traverse(root);
+
+	btree * second = malloc(sizeof(btree));
+	root = second->root;
+	insert(5, root);
 	traverse(root);
 }
 
