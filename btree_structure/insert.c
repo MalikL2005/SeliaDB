@@ -11,41 +11,19 @@
 
 
 
-#define MIN_CHILDREN 2 
-#define MAX_CHILDREN 4 // MAX_CHILDREN = 2 * MIN_CHILDREN
-#define MIN_KEYS 1 // MIN_KEYS = MIN_CHILDREN - 1
-#define MAX_KEYS 3 // MAX_KEYS = 2 * MIN_CHILDREN - 1
 
-
-
-// Struct that is used as nodes for the tree.
-struct node{
-	int keys [MAX_KEYS];
-	struct node * children [MAX_CHILDREN];
-};
-
-// Declaration of root node
-struct node * root;
-
-
-void insert(int value, struct node *current);
-int * createTempArr(int value, struct node *current);
-void splitNode(int value, struct node *current);
-void insertToNode(int value, struct node *current);
-struct node * findParent(struct node * target, struct node * current);
-
-
+#include "insert.h"
 
 /* 
  * Void function that is called first when a value is inserted.
  * It traverses the tree until the right leaf (where the value is to be inserted) is found.
  * Upon finding the right leaf node, the function calls either insertToNode (if node is not full) or splitNode (if node is full).
 */
-void insert(int value, struct node *current){
+void insert(int value, node *current){
 	// 1. If the tree is empty, allocate a root node and insert the key.
 	if (root == NULL){
 		printf("Root is null\n");
-		struct node * new_root = malloc(sizeof(struct node));
+		node * new_root = malloc(sizeof(node));
 		new_root->keys[0] = value;
 		root = new_root;
 		return;
@@ -89,7 +67,7 @@ void insert(int value, struct node *current){
  * It is called when a node has reached MAX_KEYS.
  * Therefore, it creates an array of size MAX_KEYS + 1 (because the node (current) overflows.
 */
-int * createTempArr(int value, struct node *current){
+int * createTempArr(int value, node *current){
 	// create temporary overflowing array with all values
 	int * temp_arr = malloc(sizeof(int) * MAX_KEYS +1);
 
@@ -128,7 +106,7 @@ int * createTempArr(int value, struct node *current){
  * A) a non-full node is found: the middle value that is passed from the child's split will be inserted.
  * B) the function's recursive call reaches the root (which is full): then a new root is allocated and the previous root is split.
 */
-void splitNode(int value, struct node *current){
+void splitNode(int value, node *current){
 	printf("value: %d\n", value);
 	int * temp_arr = createTempArr(value, current);
 	printf("SplitNode\n");
@@ -140,8 +118,8 @@ void splitNode(int value, struct node *current){
 		printf("SN Middle value: %d\n", middle_value);
 
 		// create two seperate nodes
-		struct node *new_left = malloc(sizeof(struct node));
-		struct node *new_right = malloc(sizeof(struct node));
+		node *new_left = malloc(sizeof(node));
+		node *new_right = malloc(sizeof(node));
 
 		// copy values to new nodes
 		int k = 0;
@@ -162,7 +140,7 @@ void splitNode(int value, struct node *current){
 			// create new root with children
 			printf("Splitting root node\n");
 			printf("root: %X %X %X %X\n", root->children[0], root->children[1], root->children[2], root->children[3]);
-			struct node * new_root = malloc(sizeof(struct node));
+			node * new_root = malloc(sizeof(node));
 
 			// adjust children of children of new root pointers
 			int middle = MAX_CHILDREN / 2;
@@ -186,7 +164,7 @@ void splitNode(int value, struct node *current){
 			// adjust children of parent node
 			printf("Finding parent\n");
 			printf("%d %d %d (%X)\n", current->keys[0], current->keys[1], current->keys[2], current);
-			struct node * parent = findParent(current, root);
+			node * parent = findParent(current, root);
 
 			// parent->children is not full
 			// find child_index of current in parent 
@@ -237,7 +215,7 @@ void splitNode(int value, struct node *current){
  * Void function that is used to insert a value to a non-full node.
  * This node may be the root, a leaf or an internal node.
 */
-void insertToNode(int value, struct node *current){
+void insertToNode(int value, node *current){
 	int placeToInsert;
 	for (placeToInsert=0; placeToInsert<MAX_KEYS; placeToInsert++){
 		if(value <= current->keys[placeToInsert] || current->keys[placeToInsert] == 0){
@@ -260,7 +238,7 @@ void insertToNode(int value, struct node *current){
  * It traverses the tree until one of the nodes' children match the target node.
  * Upon finding the parent of target, the parent node is returned.
 */
-struct node * findParent(struct node * target, struct node * current){
+node * findParent(node * target, node * current){
 	// print address and children of current
 	printf("Searching for %d\n", target->keys[0]);
 	printf("Current: %d %d %d\n", current->keys[0], current->keys[1], current->keys[2]);
