@@ -132,6 +132,7 @@ void splitNode(int value, node *current){
 			else if (*(temp_arr + i) > middle_value) {
 				new_right->keys[k] = *(temp_arr + i);
 				printf("Right (%d): %d\n", k, new_right->keys[k]);
+				k++;
 			}
 		}
 
