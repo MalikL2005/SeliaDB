@@ -132,6 +132,7 @@ void splitNode(int value, node *current){
 			else if (*(temp_arr + i) > middle_value) {
 				new_right->keys[k] = *(temp_arr + i);
 				printf("Right (%d): %d\n", k, new_right->keys[k]);
+                k++;
 			}
 		}
 
@@ -153,7 +154,12 @@ void splitNode(int value, node *current){
 					right ++;
 				}
 			}
-
+            
+            printf("Printing right child: \n");
+            for (int i=0; i<MAX_KEYS; i++){
+                printf("%d ", new_right->keys[i]);
+            }
+            printf("\n");
 
 			new_root->keys[0] = middle_value;
 			new_root->children[0] = new_left;
@@ -239,9 +245,14 @@ void insertToNode(int value, node *current){
  * Upon finding the parent of target, the parent node is returned.
 */
 node * findParent(node * target, node * current){
+    printf("Printing current: \n");
+    for (int i=0; i<MAX_KEYS; i++){
+        printf("%d -%d- ", current->keys[i], i);
+    }
+    printf("\n");
 	// print address and children of current
 	printf("Searching for %d\n", target->keys[0]);
-	printf("Current: %d %d %d\n", current->keys[0], current->keys[1], current->keys[2]);
+	// printf("Current: %d %d %d\n", current->keys[0], current->keys[1], current->keys[2]);
 	if (current->children[0] != NULL){
 		for (int i=0; i<MAX_CHILDREN && current->children[i] != NULL; i++){
 			printf("%d %d %d\n", current->children[i]->keys[0], current->children[i]->keys[1], current->children[i]->keys[2]);
@@ -262,9 +273,11 @@ node * findParent(node * target, node * current){
 	int index;
 	for (index=0; index<MAX_KEYS; index++){
 		// current is not full; searched value is greater than all in current
-		if (current->keys[index] == 0 && current->keys[index - 1] < target->keys[0]){
-			printf("Largest value at index %d\n", index -1);
-			return findParent(target, current->children[index]);
+		if (current->keys[index] == 0 && current->keys[index-1] < target->keys[0]){
+			printf("Largest value at index %d\n", index);
+            printf("Here\n");
+            printf("%d\n", current->children[index]->keys[0]);
+            return findParent(target, current->children[index]);
 		}
 		// current is full; searched value is greater than all in current
 		if (index == MAX_KEYS-1 && current->keys[index-1] < target->keys[0]){

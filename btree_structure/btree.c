@@ -26,28 +26,9 @@ void main(){
 	// mybtree->name ="Edos_whoo";
 	btree * index = malloc(sizeof(btree));
 	root = index->root;
-	for (int i=1; i<=10; i++){
+	for (int i=1; i<=10000; i++){
 		insert(i, root);
 	}
-	traverse(root);
-	delete(10);
-	delete(1);
-	delete(2);
-	delete(3);
-	traverse(root);
-	delete(9);
-	traverse(root);
-	delete(6);
-	traverse(root);
-	delete(5);
-	traverse(root);
-	printf("Deletion call of 8\n");
-	delete(8);
-	traverse(root);
-
-	btree * second = malloc(sizeof(btree));
-	root = second->root;
-	insert(5, root);
 	traverse(root);
 }
 
