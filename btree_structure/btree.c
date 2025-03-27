@@ -21,14 +21,18 @@
 #include "delete.h"
 
 
-void main(){
-	// struct btree * mybtree = malloc(sizeof(struct btree));
-	// mybtree->name ="Edos_whoo";
+int main(int argc, char **argv){
 	btree * index = malloc(sizeof(btree));
 	root = index->root;
-	for (int i=1; i<=10000; i++){
-		insert(i, root);
+    int num_to_insert_to = atoi(argv[1]);
+    // Add error handling (behaviour is undefined if argv[1] is not numerical)
+    printf("argv[0]: %s\n", argv[1]);
+	for (int i=1; i<=num_to_insert_to; i++){
+        entry entr = {.key=i, .value = i*2};
+		insert(entr, root);
 	}
+    printf("Now traversing\n");
+    if (root == NULL) return 1;
 	traverse(root);
 }
 
@@ -38,13 +42,14 @@ void main(){
 
 /*
 * This function traverses and prints the tree (root, left, right).
+* Root must not be NULL.
 */
 void traverse(node *current){
-	if (root == NULL) return;
 	if (current == NULL) return;
-	for (int j=0; j<MAX_KEYS; j++) printf("%d) %d\n", j+1, current->keys[j]);
+	for (int j=0; j<MAX_KEYS; j++) printf("%d) %d (%d)\n", j+1, current->entries[j].key, current->entries[j].value);
 	printf("\n");
 	for (int i=0; i<MAX_CHILDREN && current->children[i] != NULL; i++){
+        printf("Traversing child no %d\n", i);
 		traverse(current->children[i]);
 	}
 }
@@ -56,32 +61,32 @@ void traverse(node *current){
 * If the value was found, a pointer to the node where the value is in, is returned.
 * if the value was not found, NULL is returned.
 */
-node * findValue(int value, node * current){
+node * findValue(int id, node * current){
 	// iterate over values in current
 	int i;
-	for (i=0; i<MAX_KEYS && current->keys[i] != 0; i++){
-		if (current->keys[i] == value){
-			printf("%d has been found at node: %d %d %d\n", value, current->keys[0], current->keys[1], current->keys[2]);
+	for (i=0; i<MAX_KEYS && current->entries[i].key != 0; i++){
+		if (current->entries[i].key == id){
+			printf("%d has been found at node: %d %d %d\n", id, current->entries[0].key, current->entries[1].key, current->entries[2].key);
 			return current; 
 		}
-		else if (value < current->keys[i]){
+		else if (id < current->entries[i].key){
 			// leaf node
 			if (current->children[0] == NULL) {
-				printf("Value %d has not been found.\n", value);
+				printf("Value %d has not been found.\n", id);
 				return NULL;
 			}
 			// current node has children
-			return findValue(value, current->children[i]);
+			return findValue(id, current->children[i]);
 		}
 	}
 	// leaf node 
 	if (current->children[0] == NULL) {
-		printf("Value %d has not been found.\n", value);
+		printf("Value %d has not been found.\n", id);
 		return NULL;
 	}
 	// current node has children
-	if (value > current->keys[i]) return findValue(value, current->children[i]);
-	printf("Value %d has not been found.\n", value);
+	if (id > current->entries[i].key) return findValue(id, current->children[i]);
+	printf("Value %d has not been found.\n", id);
 	return NULL;
 }
 
@@ -93,7 +98,7 @@ node * findValue(int value, node * current){
  */
 int getNodeIndex(node * current, int value){
 	int index;
-	for (index=0; index<MAX_KEYS && current->keys[index] != value; index ++){}
+	for (index=0; index<MAX_KEYS && current->entries[index].key != value; index ++){}
 	return index;
 }
 
@@ -105,7 +110,7 @@ int getNodeIndex(node * current, int value){
  */
 int getIndexGreatestValue(node * current){
 	int len;
-	for (len = 0; len<MAX_KEYS && current->keys[len] != 0; len ++){}
+	for (len = 0; len<MAX_KEYS && current->entries[len].key != 0; len ++){}
 	len --;
 	return len;
 }

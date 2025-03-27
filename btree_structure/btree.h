@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 
@@ -14,10 +15,15 @@
 #define MAX_KEYS 9 // MAX_KEYS = 2 * MIN_CHILDREN - 1
 
 
+typedef struct entry{
+    int key;
+    int value;
+} entry;
+
 
 // Struct that is used as nodes for the tree.
 typedef struct node{
-	int keys [MAX_KEYS];
+	entry entries [MAX_KEYS];
 	struct node * children [MAX_CHILDREN];
 } node;
 
@@ -29,8 +35,8 @@ struct node * root;
 
 
 void traverse(node *current);
-node * findValue(int value, node * current);
-int getNodeIndex(node * current, int value);
+node * findValue(int id, node * current);
+int getNodeIndex(node * current, int id);
 int getIndexGreatestValue(node * current);
 
 
