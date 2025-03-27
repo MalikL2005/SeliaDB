@@ -1,3 +1,15 @@
+/*
+ *
+ *
+ * search.c
+ * This file contains all functionality for searching by key/value 
+ * (Value still needs to be implemented though)
+ *
+ *
+ *
+ * */
+
+
 
 #include "search.h"
 
