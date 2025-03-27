@@ -58,6 +58,7 @@ void insert(entry entry, node *current){
 			num_of_children ++;
 		}
 		printf("num of children %d\n", num_of_children);
+        printf("entry: %d\n", entry.key);
 		if (!is_inserted && entry.key > current->entries[num_of_children].key) insert(entry, current->children[num_of_children]);
 	}
 }
@@ -206,8 +207,8 @@ void splitNode(entry entry, node *current){
 				parent->children[child_index + 1] = new_right;
                 printf("parent: %d\n", parent->entries[0].key);
                 printf("Middle: %d\n", middle_id.key);
-                printf("New left: %d\n", root->children[child_index]->entries[0].key);
-                printf("New right: %d\n", root->children[child_index+1]->entries[0].key);
+                /*printf("New left: %d\n", root->children[child_index]->entries[0].key);*/
+                /*printf("New right: %d\n", root->children[child_index+1]->entries[0].key);*/
 				printf("SplitNode parent\n");
                 // recursive call to split the parent or to insert middle_id if it's not full
                 splitNode(middle_id, parent);
@@ -216,9 +217,9 @@ void splitNode(entry entry, node *current){
 	}
 	// current node is not full
 	else if (current->entries[MAX_KEYS - 1].key == 0){
-        printf("Children : %d\n", root->children[0]->entries[0].key);
+        if (root->children[1] != NULL && root->children[1]->children[0] != NULL){printf("Children I: %d\n", root->children[1]->entries[0].key);}
 		insertToNode(entry, current);
-        printf("Children II: %d\n", root->children[0]->entries[0].key);
+        if (root->children[1] != NULL && root->children[1]->children[0] != NULL){printf("Children II: %d\n", root->children[1]->entries[0].key);}
 	}
 }
 
@@ -236,14 +237,15 @@ void insertToNode(entry entry, node *current){
 		}
 	}
 	printf("Inserting at index %d\n", placeToInsert);
-    if (root->children[0] != NULL){printf("Children I.I: %d\n", root->children[0]->entries[0].key);}
+    if (current->children[1] != NULL && current->children[1]->children[0] != NULL){printf("Children I.I: %d\n", current->children[1]->entries[0].key);}
+    printf("Current: %d\n", current->entries[0].key);
     struct node * save_children[10];
-    memcpy(save_children, root->children, sizeof(root->children));
+    memcpy(save_children, current->children, sizeof(current->children));
 	// shift array to right
 	for (int j=MAX_KEYS; j>placeToInsert; j--){
 		current->entries[j] = current->entries[j-1];
 	}
-    memcpy(root->children, save_children, sizeof(root->children));
+    memcpy(current->children, save_children, sizeof(current->children));
 	// insert entry
 	current->entries[placeToInsert] = entry;
 }
