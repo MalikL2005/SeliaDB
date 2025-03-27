@@ -48,7 +48,7 @@ void insert(entry entry, node *current){
 		// traverse tree until right leaf node is found
 		int num_of_children = 0;
 		bool is_inserted = false;
-		for (int i=0; i<MAX_CHILDREN && current->entries[i].key != 0; i++){
+		for (int i=0; i<MAX_CHILDREN && current->entries[i].key > 0; i++){
 			printf("id: %d; current->entries: %d\n", entry.key, current->entries[i].key);
 			if (entry.key <= current->entries[i].key){
 				insert(entry, current->children[i]);

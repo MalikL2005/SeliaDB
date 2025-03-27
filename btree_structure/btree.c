@@ -19,6 +19,7 @@
 #include "btree.h"
 #include "insert.h"
 #include "delete.h"
+#include "search.h"
 
 
 int main(int argc, char **argv){
@@ -34,6 +35,16 @@ int main(int argc, char **argv){
     printf("Now traversing\n");
     if (root == NULL) return 1;
 	traverse(root);
+    
+    // Test for searching by key
+    int key = 20;
+    entry test = search_by_key(key, root);
+    if (test.key <= 0){
+        printf("Key %d not found anywhere.\n", key);
+        return 1;
+    }
+    printf("Test findings: %d - %d\n", test.key, test.value);
+
 }
 
 
