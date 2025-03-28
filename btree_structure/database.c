@@ -11,7 +11,7 @@
 database_t * create_database (char * name, int num_of_tables, table_t * tables){
     database_t * db = malloc(sizeof(database_t));
     db->name = name;
-    node * pRoot = malloc(sizeof(node));
+    db->root = malloc(sizeof(node));
     db->num_of_tables = num_of_tables;
     db->tables = tables;
     return db;
