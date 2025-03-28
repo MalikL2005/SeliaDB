@@ -15,7 +15,8 @@
 #include "btree.h"
 
 
-struct entry_t search_by_key(int key, node * current){
+struct entry_t search_by_key(int key, node * current, int * search_iterations){
+    (*search_iterations) ++;
 	int i;
 	for (i=0; i<MAX_KEYS && current->entries[i].key != 0; i++){
 		if (current->entries[i].key == key){
@@ -29,7 +30,7 @@ struct entry_t search_by_key(int key, node * current){
                 return (entry_t) {0,0};
 			}
 			// current node has children
-			return search_by_key(key, current->children[i]);
+			return search_by_key(key, current->children[i], search_iterations);
 		}
 	}
 	// leaf node 
@@ -38,7 +39,7 @@ struct entry_t search_by_key(int key, node * current){
         return (entry_t) {0,0};
 	}
 	// current node has children
-	if (key > current->entries[i].key) return search_by_key(key, current->children[i]);
+	if (key > current->entries[i].key) return search_by_key(key, current->children[i], search_iterations);
 	printf("Key %d has not been found.\n", key);
     return (entry_t) {0,0};
 }

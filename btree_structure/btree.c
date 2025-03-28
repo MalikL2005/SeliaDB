@@ -37,13 +37,17 @@ int main(int argc, char **argv){
 	traverse(root);
     
     // Test for searching by key
-    int key = 20;
-    entry_t test = search_by_key(key, root);
+    int key = 9999;
+    int * iterations = malloc(sizeof(int));
+    entry_t test = search_by_key(key, root, iterations);
     if (test.key <= 0){
         printf("Key %d not found anywhere.\n", key);
+        printf("Search iterations: %d\n", *iterations);
         return 1;
     }
     printf("Test findings: %d - %d\n", test.key, test.value);
+    printf("Search iterations: %d\n", *iterations);
+    free(iterations);
 
 }
 
