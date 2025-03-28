@@ -21,7 +21,7 @@
  * It traverses the tree until the right leaf (where the id is to be inserted) is found.
  * Upon finding the right leaf node, the function calls either insertToNode (if node is not full) or splitNode (if node is full).
 */
-void insert(entry entry, node *current){
+void insert(entry_t entry, node *current){
 	// 1. If the tree is empty, allocate a root node and insert the key.
 	if (root == NULL){
 		printf("Root is null\n");
@@ -58,7 +58,7 @@ void insert(entry entry, node *current){
 			num_of_children ++;
 		}
 		printf("num of children %d\n", num_of_children);
-        printf("entry: %d\n", entry.key);
+        printf("entry_t: %d\n", entry.key);
 		if (!is_inserted && entry.key > current->entries[num_of_children].key) insert(entry, current->children[num_of_children]);
 	}
 }
@@ -70,9 +70,9 @@ void insert(entry entry, node *current){
  * It is called when a node has reached MAX_KEYS.
  * Therefore, it creates an array of size MAX_KEYS + 1 (because the node (current) overflows.
 */
-entry * createTempArr(entry entry, node *current){
+entry_t * createTempArr(entry_t entry, node *current){
 	// create temporary overflowing array with all ids
-	struct entry *temp_arr = malloc(sizeof(entry) * MAX_KEYS +1);
+	struct entry_t *temp_arr = malloc(sizeof(entry) * MAX_KEYS +1);
 
 	// copy current node´s key array unitl id
 	int i_original;
@@ -109,15 +109,15 @@ entry * createTempArr(entry entry, node *current){
  * A) a non-full node is found: the middle id that is passed from the child's split will be inserted.
  * B) the function's recursive call reaches the root (which is full): then a new root is allocated and the previous root is split.
 */
-void splitNode(entry entry, node *current){
+void splitNode(entry_t entry, node *current){
 	printf("id: %d\n", entry.key);
-	struct entry * temp_arr = createTempArr(entry, current);
+	struct entry_t * temp_arr = createTempArr(entry, current);
 	printf("SplitNode\n");
 	printf("%d %d %d\n", current->entries[0].key, current->entries[1].key, current->entries[2].key);
 	// current->entries is full
 	if (current->entries[MAX_KEYS - 1].key != 0){
 		// calculate middle id
-		struct entry middle_id = *(temp_arr + (MAX_KEYS/2 + 1));
+		struct entry_t middle_id = *(temp_arr + (MAX_KEYS/2 + 1));
 		printf("SN Middle id: %d\n", middle_id.key);
 
 		// create two seperate nodes
@@ -229,7 +229,7 @@ void splitNode(entry entry, node *current){
  * Void function that is used to insert a key to a non-full node.
  * This node may be the root, a leaf or an internal node.
 */
-void insertToNode(entry entry, node *current){
+void insertToNode(entry_t entry, node *current){
 	int placeToInsert;
 	for (placeToInsert=0; placeToInsert<MAX_KEYS; placeToInsert++){
 		if(entry.key <= current->entries[placeToInsert].key || current->entries[placeToInsert].key == 0){

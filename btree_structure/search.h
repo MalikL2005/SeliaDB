@@ -2,7 +2,7 @@
 
 
 
-struct entry search_by_key(int key, node * current);
+struct entry_t search_by_key(int key, node * current);
 
 
 

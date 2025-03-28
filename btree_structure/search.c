@@ -12,9 +12,10 @@
 
 
 #include "search.h"
+#include "btree.h"
 
 
-struct entry search_by_key(int key, node * current){
+struct entry_t search_by_key(int key, node * current){
 	int i;
 	for (i=0; i<MAX_KEYS && current->entries[i].key != 0; i++){
 		if (current->entries[i].key == key){
@@ -25,7 +26,7 @@ struct entry search_by_key(int key, node * current){
 			// leaf node
 			if (current->children[0] == NULL) {
 				printf("Key %d has not been found.\n", key);
-                return (entry) {0,0};
+                return (entry_t) {0,0};
 			}
 			// current node has children
 			return search_by_key(key, current->children[i]);
@@ -34,14 +35,33 @@ struct entry search_by_key(int key, node * current){
 	// leaf node 
 	if (current->children[0] == NULL) {
 		printf("Key %d has not been found.\n", key);
-        return (entry) {0,0};
+        return (entry_t) {0,0};
 	}
 	// current node has children
 	if (key > current->entries[i].key) return search_by_key(key, current->children[i]);
 	printf("Key %d has not been found.\n", key);
-    return (entry) {0,0};
+    return (entry_t) {0,0};
 }
 
 
+
+
+/*
+ *
+ * Depth first search algorithm to (not efficiently) find an entry_t by value
+ *
+ * 
+*/
+entry_t search_by_value(int value, node * current){
+    if (current == NULL){
+        return (entry_t) {0,0};
+    }
+    for (int i=0; i<MAX_KEYS || current->entries[i].key <= 0; i++){
+        if (current->entries[i].value == value){
+            return current->entries[i];
+        }
+    }
+    return (entry_t) {0,0};
+}
 
 

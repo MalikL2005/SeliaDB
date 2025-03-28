@@ -29,7 +29,7 @@ int main(int argc, char **argv){
     // Add error handling (behaviour is undefined if argv[1] is not numerical)
     printf("argv[0]: %s\n", argv[1]);
 	for (int i=1; i<=num_to_insert_to; i++){
-        entry entr = {.key=i, .value = i*2};
+        entry_t entr = {.key=i, .value = i*2};
 		insert(entr, root);
 	}
     printf("Now traversing\n");
@@ -38,7 +38,7 @@ int main(int argc, char **argv){
     
     // Test for searching by key
     int key = 20;
-    entry test = search_by_key(key, root);
+    entry_t test = search_by_key(key, root);
     if (test.key <= 0){
         printf("Key %d not found anywhere.\n", key);
         return 1;

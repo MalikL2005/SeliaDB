@@ -11,10 +11,10 @@
 
 #include "btree.h"
 
-void insert(entry entry, node *current);
-entry * createTempArr(entry entry, node *current);
-void splitNode(entry entry, node *current);
-void insertToNode(entry entry, node *current);
+void insert(entry_t entry, node *current);
+entry_t * createTempArr(entry_t entry, node *current);
+void splitNode(entry_t entry, node *current);
+void insertToNode(entry_t entry, node *current);
 node *findParent(node * target, node * current);
 
 
