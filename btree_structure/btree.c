@@ -25,7 +25,7 @@
 
 int main(int argc, char **argv){
 	btree * index = malloc(sizeof(btree));
-	root = index->root;
+    node * root = malloc(sizeof(node));
     if (argc < 2){
         printf("Usage: btree [num_to_insert_to]\nDefaulting to 100");
         argv[1] = "100";
@@ -35,7 +35,7 @@ int main(int argc, char **argv){
     printf("argv[0]: %s\n", argv[1]);
 	for (int i=1; i<=num_to_insert_to; i++){
         entry_t entr = {.key=i, .value = i*2};
-		insert(entr, root);
+		insert(entr, root, &root);
 	}
     printf("Now traversing\n");
     if (root == NULL) return 1;
