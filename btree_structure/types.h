@@ -33,11 +33,13 @@ typedef enum type_t {
     INTEGER,
     FLOAT,
     VARCHAR,
-    BOOL
+    BOOL,
+    NONE
 } type_t;
 
 
 typedef struct column_t {
+    char * name;
     type_t type;
     int size;
 } column_t;

@@ -20,6 +20,7 @@
 #include "insert.h"
 #include "delete.h"
 #include "search.h"
+#include "types.h"
 
 
 int main(int argc, char **argv){
@@ -48,6 +49,13 @@ int main(int argc, char **argv){
     printf("Test findings: %d - %d\n", test.key, test.value);
     printf("Search iterations: %d\n", *iterations);
     free(iterations);
+
+
+    column_t * col = create_column("Column", "INTEGER", 0);
+    table_t * tb = create_table("Table1", 1, col);
+    database_t * db = create_database("MY_DB", 1, tb);
+    printf("Display db!\n");
+    display_database(db);
 
 }
 
