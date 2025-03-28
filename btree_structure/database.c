@@ -97,12 +97,12 @@ void display_column(column_t col){
         case BOOL: tp="BOOL"; break;
         case NONE: tp="NONE";
     }
-    printf("\t\t- %s (%s -> %d)\n", col.name, tp, col.size);
+    printf("- %s (%s -> %d)\n", col.name, tp, col.size);
 }
 
 void display_table(table_t tb){
-    printf("\tName: %s\n", tb.name);
-    printf("\tnum of cols: %d\n", tb.metadata.num_of_columns);
+    printf("Name: %s\n", tb.name);
+    printf("Num of cols: %d\n", tb.metadata.num_of_columns);
     for (int i=0; i<tb.metadata.num_of_columns; i++){
         printf("%d)\n", i);
         display_column(tb.metadata.columns[i]);

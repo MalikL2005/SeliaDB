@@ -26,6 +26,10 @@
 int main(int argc, char **argv){
 	btree * index = malloc(sizeof(btree));
 	root = index->root;
+    if (argc < 2){
+        printf("Usage: btree [num_to_insert_to]\nDefaulting to 100");
+        argv[1] = "100";
+    }
     int num_to_insert_to = atoi(argv[1]);
     // Add error handling (behaviour is undefined if argv[1] is not numerical)
     printf("argv[0]: %s\n", argv[1]);
@@ -37,8 +41,9 @@ int main(int argc, char **argv){
     if (root == NULL) return 1;
 	traverse(root);
     
+    printf("Hola????\n\n");
     // Test for searching by key
-    int key = 9999;
+    int key = 500;
     int * iterations = malloc(sizeof(int));
     entry_t test = search_by_key(key, root, iterations);
     if (test.key <= 0){
@@ -47,7 +52,7 @@ int main(int argc, char **argv){
         return 1;
     }
     printf("Test findings: %d - %d\n", test.key, test.value);
-    printf("Search iterations: %d\n", *iterations);
+    printf("Search iterations: %d\nThis is driving me crazzzzzyyy\n", *iterations);
     free(iterations);
 
 
@@ -56,6 +61,7 @@ int main(int argc, char **argv){
     database_t * db = create_database("MY_DB", 1, tb);
     printf("Display db!\n");
     display_database(db);
+    printf("Hello World...\n");
 
 }
 
