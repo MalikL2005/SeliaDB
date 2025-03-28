@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "types.h"
 
 
 
@@ -58,6 +59,7 @@ typedef struct database_t {
     char * name;
     int num_of_tables;
     table_t * tables;
+    node * root;
 } database_t;
 
 
