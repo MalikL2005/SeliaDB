@@ -24,8 +24,13 @@
 
 
 int main(int argc, char **argv){
-	btree * index = malloc(sizeof(btree));
-	root = index->root;
+    column_t * col1 = create_column("Column1", "INTEGER", 0);
+    column_t * col2 = create_column("Column2", "FLOAT", 0);
+    column_t * col3 = create_column("Column3", "VARCHAR", 0);
+    table_t * tb1 = create_table("Table1", 1, col1);
+    table_t * tb2 = create_table("Table2", 2, col2, col3);
+    database_t * db1 = create_database("MY_DB", 2, tb1, tb2);
+    db1->root = malloc(sizeof(node));
     if (argc < 2){
         printf("Usage: btree [num_to_insert_to]\nDefaulting to 100");
         argv[1] = "100";
@@ -35,34 +40,32 @@ int main(int argc, char **argv){
     printf("argv[0]: %s\n", argv[1]);
 	for (int i=1; i<=num_to_insert_to; i++){
         entry_t entr = {.key=i, .value = i*2};
-		insert(entr, root);
+		insert(entr, db1->root, &db1->root);
 	}
     printf("Now traversing\n");
-    if (root == NULL) return 1;
-	traverse(root);
+    if (db1->root == NULL) return 1;
+	traverse(db1->root);
     
     printf("Hola????\n\n");
     // Test for searching by key
     int key = 500;
     int * iterations = malloc(sizeof(int));
-    entry_t test = search_by_key(key, root, iterations);
+    entry_t test = search_by_key(key, db1->root, iterations);
     if (test.key <= 0){
         printf("Key %d not found anywhere.\n", key);
         printf("Search iterations: %d\n", *iterations);
-        return 1;
+    } else {
+        printf("Test findings: %d - %d\n", test.key, test.value);
     }
-    printf("Test findings: %d - %d\n", test.key, test.value);
-    printf("Search iterations: %d\nThis is driving me crazzzzzyyy\n", *iterations);
-    free(iterations);
+    /*free(iterations);*/
 
 
-    column_t * col = create_column("Column", "INTEGER", 0);
-    table_t * tb = create_table("Table1", 1, col);
-    database_t * db = create_database("MY_DB", 1, tb);
-    printf("Display db!\n");
-    display_database(db);
-    printf("Hello World...\n");
-
+    display_database(db1);
+    /*insertDefaultValues(&(db1->tables[0]->metadata));*/
+    /*insertDefaultValues(&(db1->tables[1]->metadata));*/
+    printf("1: %s\n", get_type_as_string(db1->tables[0]->metadata.columns[0]->type));
+    printf("2: %s\n", get_type_as_string(db1->tables[1]->metadata.columns[0]->type));
+    /*free(db1);*/
 }
 
 

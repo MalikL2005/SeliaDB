@@ -15,7 +15,7 @@
 
 // Declaration of root node
 // The node * root is essential, as it points to the root of the currently selected btree.
-struct node * root;
+/*struct node * root;*/
 
 #define MAX_BTREE_NAME_LENGTH 32
 

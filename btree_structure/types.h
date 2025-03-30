@@ -19,6 +19,7 @@ typedef struct varchar_entry_t {
 typedef struct entry_t {
     int key;
     int value;
+    void * values;
 } entry_t;
 
 
@@ -47,7 +48,8 @@ typedef struct column_t {
 
 typedef struct table_metadata_t {
     int num_of_columns;
-    column_t * columns;
+    column_t ** columns;
+    int last_index;
 } table_metadata_t;
 
 
@@ -60,7 +62,7 @@ typedef struct table_t {
 typedef struct database_t {
     char * name;
     int num_of_tables;
-    table_t * tables;
+    table_t ** tables;
     node * root;
 } database_t;
 
