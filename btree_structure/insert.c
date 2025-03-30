@@ -13,6 +13,7 @@
 
 
 #include "insert.h"
+#include "types.h"
 #include <string.h>
 
 /* 
@@ -97,6 +98,28 @@ entry_t * createTempArr(entry_t entry, node *current){
 	for (int i=0; i<MAX_KEYS + 1; i++){ printf("%d ", (temp_arr + i)->key); }
 	printf("\n");
 	return temp_arr;
+}
+
+
+
+/*
+* inserts default values to entry
+* Default values are: - VARCHAR: ""
+*                     - INTEGER: 0
+*                     - FLOAT: 0.0
+*                     - BOOL: FALSE
+* return value of NULL indicates error
+*/
+entry_t insertDefaultValues(table_metadata_t * tb){
+    /*void * vals = malloc(sizeof(char)*500);*/
+    int offset = 0;
+    for (int i=0; i<tb->num_of_columns; i++){
+        printf("Size of [%s] this is %d\n", get_type_as_string(tb->columns[i]->type), tb->columns[i]->size);
+        offset += tb->columns[i]->size;
+        printf("Offset: %d\n", tb->columns[i]->size);
+    }
+    /*return (entry_t){tb->last_index +1, (tb->last_index +1)*2, }*/
+    return (entry_t) {};
 }
 
 

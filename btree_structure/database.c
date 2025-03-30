@@ -8,7 +8,16 @@
 #include "types.h"
 
 
-database_t * create_database (char * name, int num_of_tables, table_t * tables){
+database_t * create_database (char * name, int num_of_tables, ...){
+    // multiple table_t * to one table_t**
+    va_list args;
+    va_start(args, num_of_tables);
+    table_t ** tables = malloc(sizeof(table_t *));
+    for (int i=0; i<num_of_tables; i++){
+        tables[i] = va_arg(args, table_t *);
+    }
+    va_end(args);
+
     database_t * db = malloc(sizeof(database_t));
     db->name = name;
     db->root = malloc(sizeof(node));
@@ -18,7 +27,18 @@ database_t * create_database (char * name, int num_of_tables, table_t * tables){
 }
 
 
-table_t * create_table (char * tb_name, int num_of_columns, column_t * columns){
+/*
+* data -> * table_t (singular)
+*/
+table_t * create_table (char * tb_name, int num_of_columns, ...){
+    va_list args;
+    va_start(args, num_of_columns);
+    column_t ** columns = malloc(sizeof(column_t *));
+    for (int i=0; i<num_of_columns; i++){
+        columns[i] = va_arg(args, column_t *);
+    }
+    va_end(args);
+
     table_t * tb = malloc(sizeof(table_t));
     tb->name = tb_name;
     table_metadata_t * metadata = malloc(sizeof(table_metadata_t));
@@ -30,7 +50,7 @@ table_t * create_table (char * tb_name, int num_of_columns, column_t * columns){
 
 
 /*
-* Compares a 
+* Compares the string representation of a character with the enum
 */
 bool compare_type(char * name, char * type_name){
     return strcmp(name, type_name) == 0;
@@ -82,35 +102,50 @@ column_t * create_column (char * name, char * type, int varchar_size){
 }
 
 
+/*
+* Returns a string representation of database-types
+*/
+const char * get_type_as_string (type_t tp){
+    switch(tp){
+        case INTEGER: return "INTEGER";
+        case FLOAT: return "FLOAT";
+        case BOOL: return "BOOL";
+        case VARCHAR: return "VARCHAR";
+        case NONE: return "NONE";
+    }
+    return "UNKNOWN TYPE";
+}
+
+
 void print_sep(){
     for (int i=0; i<30; i++) printf("-");
     printf("\n");
 }
 
 
-void display_column(column_t col){
+void display_column(column_t * col){
     char * tp;
-    switch(col.type){
+    switch(col->type){
         case INTEGER: tp="INTEGER"; break;
         case FLOAT: tp="FLOAT"; break;
         case VARCHAR: tp="VARCHAR"; break;
         case BOOL: tp="BOOL"; break;
         case NONE: tp="NONE";
     }
-    printf("- %s (%s -> %d)\n", col.name, tp, col.size);
+    printf("- %s (%s -> %d)\n", col->name, tp, col->size);
 }
 
-void display_table(table_t tb){
-    printf("Name: %s\n", tb.name);
-    printf("Num of cols: %d\n", tb.metadata.num_of_columns);
-    for (int i=0; i<tb.metadata.num_of_columns; i++){
+void display_table(table_t *tb){
+    printf("Name: %s\n", tb->name);
+    printf("Num of cols: %d\n", tb->metadata.num_of_columns);
+    for (int i=0; i<tb->metadata.num_of_columns; i++){
         printf("%d)\n", i);
-        display_column(tb.metadata.columns[i]);
+        display_column(tb->metadata.columns[i]);
     }
 }
 
 void display_database(database_t * db){
-    printf("Display of %s\n", db->name);
+    printf("\nDisplay of %s\n", db->name);
     print_sep();
     for (int i=0; i<db->num_of_tables; i++){
         printf("%d)\n", i+1);
