@@ -26,7 +26,7 @@
 int main(int argc, char **argv){
     column_t * col1 = create_column("Column1", "INTEGER", 0);
     column_t * col2 = create_column("Column2", "FLOAT", 0);
-    column_t * col3 = create_column("Column3", "VARCHAR", 0);
+    column_t * col3 = create_column("Column3", "VARCHAR", 255);
     table_t * tb1 = create_table("Table1", 1, col1);
     table_t * tb2 = create_table("Table2", 2, col2, col3);
     database_t * db1 = create_database("MY_DB", 2, tb1, tb2);
@@ -61,10 +61,6 @@ int main(int argc, char **argv){
 
 
     display_database(db1);
-    /*insertDefaultValues(&(db1->tables[0]->metadata));*/
-    /*insertDefaultValues(&(db1->tables[1]->metadata));*/
-    printf("1: %s\n", get_type_as_string(db1->tables[0]->metadata.columns[0]->type));
-    printf("2: %s\n", get_type_as_string(db1->tables[1]->metadata.columns[0]->type));
     /*free(db1);*/
 }
 

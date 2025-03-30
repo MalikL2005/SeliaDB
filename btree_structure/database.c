@@ -139,7 +139,6 @@ void display_table(table_t *tb){
     printf("Name: %s\n", tb->name);
     printf("Num of cols: %d\n", tb->metadata.num_of_columns);
     for (int i=0; i<tb->metadata.num_of_columns; i++){
-        printf("%d)\n", i);
         display_column(tb->metadata.columns[i]);
     }
 }
