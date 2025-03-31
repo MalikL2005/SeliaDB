@@ -35,48 +35,56 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
     if (tb->num_of_columns != num_of_columns) {
         return NULL;
     }
+    void ** vals = malloc(sizeof(int)* tb->num_of_columns);
     entry_t * new_entry = malloc(sizeof(entry_t));
-    new_entry->values = malloc(sizeof(int)*tb->num_of_columns);
 
     va_list args;
     va_start(args, num_of_columns);
-    int offset = 0;
-    type_t cur;
     printf("Creating entry...\n");
+    float * buffer_float = malloc(sizeof(float) * tb->num_of_columns);
+    int num_of_floats = 0;
+    char ** buffer_varchar = malloc(sizeof(char *) * tb->num_of_columns);
+    int num_of_pChars = 0;
+    int * buffer_int = malloc(sizeof(int) * tb->num_of_columns);
+    int num_of_ints = 0; 
 
-    int buffer_int;
-    float buffer_float;
-    char * buffer_varchar;
     for (int i=0; i<num_of_columns; i++){
         printf("%d) %s: %s (%d)\n", i, tb->columns[i]->name, get_type_as_string(tb->columns[i]->type), tb->columns[i]->size);
-        cur = tb->columns[i]->type;
         switch(tb->columns[i]->type){
             case INTEGER:
-                buffer_int = va_arg(args, int);
-                new_entry->values[i] = malloc(sizeof(int));
-                *((int*) new_entry->values[i]) = buffer_int;
-                printf("Received int: %d\n", buffer_int);
-                printf("Saved int: %d\n", *((int*) new_entry->values[i]));
+                buffer_int[num_of_ints] = va_arg(args, int);
+                vals[i] = &buffer_int[num_of_ints++];
+                printf("Got int %d\n", *(int *) vals[i]);
                 break;
             case FLOAT:
-                buffer_float = va_arg(args, double);
-                new_entry->values[i] = malloc(sizeof(float));
-                *((float*) new_entry->values[i]) = buffer_float;
-                printf("Received float: %f\n", buffer_float);
-                printf("Saved float: %f\n", *((float *) new_entry->values[i]));
+                /*buffer_float[num_of_floats] = malloc(sizeof(float));*/
+                buffer_float[num_of_floats] = va_arg(args, double);
+                vals[i] = &buffer_float[num_of_floats++];
+                printf("Got float %f\n", *(float *) vals[i]);
                 break;
             case VARCHAR:
-                buffer_varchar = va_arg(args, char *);
-                new_entry->values[i] = malloc(sizeof(char *));
-                new_entry->values[i] = buffer_varchar;
-                printf("Received varchar: %s\n", buffer_varchar);
-                printf("Saved varchar: %s\n", (char *) new_entry->values[i]);
+                buffer_varchar[num_of_pChars] = va_arg(args, char *);
+                vals[i] = buffer_varchar[num_of_pChars++];
+                free(buffer_varchar[num_of_pChars]);
+                printf("Got varchar %s\n", (char *) vals[i]);
                 break;
             default: return NULL;
         }
     }
     va_end(args);
+    new_entry->values = vals;
+    new_entry->key = tb->last_index;
+    new_entry->value = tb->last_index * 2;
+    tb->last_index ++;
 
+    free(buffer_varchar);
+    free(buffer_float);
+    free(buffer_int);
+
+    /*printf("create entry got %p\n", new_entry->values);*/
+    /*printf("got %f\n", *(float*) new_entry->values[0]);*/
+    /*printf("got addr %p\n", new_entry->values[0]);*/
+    /*printf("got %s\n", (char*) new_entry->values[1]);*/
 
     return new_entry;
 }
@@ -100,6 +108,7 @@ table_t * create_table (char * tb_name, int num_of_columns, ...){
     table_metadata_t * metadata = malloc(sizeof(table_metadata_t));
     metadata->num_of_columns = num_of_columns;
     metadata->columns = columns;
+    metadata->last_index = 1;
     tb->metadata = metadata;
     tb->root = malloc(sizeof(node));
     return tb;

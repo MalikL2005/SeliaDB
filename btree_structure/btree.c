@@ -42,37 +42,23 @@ int main(int argc, char **argv){
     // Todo: Add error handling (behaviour is undefined if argv[1] is not numerical)
     printf("argv[0]: %s\n", argv[1]);
 	for (int i=1; i<=num_to_insert_to; i++){
-        // malloc void ** vals 
-        void ** vals = malloc(sizeof(int)* tb->metadata->num_of_columns);
 
-        // for future use: tb->metadata->columns[0]->size
 
-        // float vals
-        float * fp = malloc(sizeof(float));
-        vals[0] = fp;
-        *fp = (float)i -0.5;
-
-        // varchar vals
-        char * cp = malloc(sizeof(char)*tb->metadata->columns[1]->size);
-        cp = "Edos Edos Whoo";
-
-        vals[0] = fp;
-        vals[1] = cp;
-
-        entry_t * entr = malloc(sizeof(entry_t));
-        entr->key = i;
-        entr->value = i * 2;
-        entr->values = vals;
-        printf("got %p\n", entr->values);
-        printf("got %f\n", *((float*) entr->values[0]));
-        printf("got %s\n", (char*) entr->values[1]);
+        char * t = "Hello";
+        if (i == 2) t = "World";
+        
+        entry_t * entr = create_entry(tb->metadata, tb->metadata->num_of_columns, (float) i-0.3, t);
+        /*printf("main got %p\n", entr->values);*/
+        /*printf("got %f\n", *(float*) entr->values[0]);*/
+        /*printf("got addr %p\n", entr->values[0]);*/
+        /*printf("got %s\n", (char*) entr->values[1]);*/
 		insert(entr, tb->root, tb);
 	}
+
     printf("Now traversing\n");
     if (tb->root == NULL) return 1;
 	traverse(tb->root, tb);
     
-    printf("Hola????\n\n");
     // Test for searching by key
     int key = 500;
     int * iterations = malloc(sizeof(int));
