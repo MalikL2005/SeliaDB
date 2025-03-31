@@ -6,11 +6,12 @@ Features that are yet to be implemented
 
 Shortterm 
 
-[ ] func add column (distinct function to create_database because: num_of_cols ++)
-[ ] func add table (distinct function to create_database because: num_of_tables ++)
+[X] func add column (distinct function to create_database because: num_of_cols ++)
+[X] func add table (distinct function to create_database because: num_of_tables ++)
 [ ] func delete table 
 [ ] func delete column
 [X] add values to entry based on columns
+[ ] function to free multiple h-a-pointer
 
 
 

@@ -218,3 +218,22 @@ void display_database(database_t * db){
     }
 }
 
+
+int add_table (database_t * db, table_t * new_tb){
+    if (db == NULL || new_tb == NULL){
+        return -1;
+    }
+    db->tables[db->num_of_tables++] = new_tb;
+    return 0;
+}
+
+
+int add_column (table_t * tb, column_t * new_col){
+    if (tb == NULL || new_col == NULL){
+        return -1;
+    }
+    tb->metadata->columns[tb->metadata->num_of_columns++] = new_col;
+    return 0;
+}
+
+

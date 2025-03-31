@@ -29,6 +29,7 @@ int main(int argc, char **argv){
     column_t * col3 = create_column("Column3", "VARCHAR", 255);
     table_t * tb1 = create_table("Table1", 1, col1);
     table_t * tb2 = create_table("Table2", 2, col2, col3);
+    add_column(tb2, col1);
     database_t * db1 = create_database("MY_DB", 2, tb1, tb2);
     db1->root = malloc(sizeof(node));
     if (argc < 2){
@@ -47,7 +48,7 @@ int main(int argc, char **argv){
         char * t = "Hello";
         if (i == 2) t = "World";
         
-        entry_t * entr = create_entry(tb->metadata, tb->metadata->num_of_columns, (float) i-0.3, t);
+        entry_t * entr = create_entry(tb->metadata, tb->metadata->num_of_columns, (float) i-0.3, t, i*10);
         /*printf("main got %p\n", entr->values);*/
         /*printf("got %f\n", *(float*) entr->values[0]);*/
         /*printf("got addr %p\n", entr->values[0]);*/
@@ -101,6 +102,7 @@ void traverse(node *current, table_t * tb){
         if (current->entries[j].values != NULL){
             printf("-> %f", *((float *)current->entries[j].values[0]));
             printf("-> %s", (char*)current->entries[j].values[1]);
+            printf("-> %d", *(int *)current->entries[j].values[2]);
             printf("-> %p", current->entries[j].values);
         }
         printf("\n");
