@@ -36,7 +36,7 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
         return NULL;
     }
     entry_t * new_entry = malloc(sizeof(entry_t));
-    new_entry->values = malloc(sizeof(int *));
+    new_entry->values = malloc(sizeof(int)*tb->num_of_columns);
 
     va_list args;
     va_start(args, num_of_columns);

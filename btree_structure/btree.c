@@ -36,21 +36,44 @@ int main(int argc, char **argv){
         argv[1] = "100";
     }
     int num_to_insert_to = atoi(argv[1]);
+
+
+    table_t * tb = tb2;
     // Todo: Add error handling (behaviour is undefined if argv[1] is not numerical)
     printf("argv[0]: %s\n", argv[1]);
 	for (int i=1; i<=num_to_insert_to; i++){
-        entry_t entr = {.key=i, .value = i*2};
-		insert(entr, tb1->root, tb1);
+        // malloc void ** vals 
+        void ** vals = malloc(sizeof(int)* tb->metadata->num_of_columns);
+
+        // for future use: tb->metadata->columns[0]->size
+
+        // float vals
+        float * fp = malloc(sizeof(float));
+        vals[0] = fp;
+        *fp = (float)i -0.5;
+
+        // varchar vals
+        char * cp = malloc(sizeof(char)*tb->metadata->columns[1]->size);
+        cp = "Edos Edos Whoo";
+
+        vals[0] = fp;
+        vals[1] = cp;
+
+        entry_t * entr = &((entry_t){.key=i, .value=i*2, .values=vals});
+        printf("got %p\n", entr->values);
+        printf("got %f\n", *((float*) entr->values[0]));
+        printf("got %s\n", (char*) entr->values[1]);
+		insert(entr, tb->root, tb);
 	}
     printf("Now traversing\n");
-    if (tb1->root == NULL) return 1;
-	traverse(tb1->root);
+    if (tb->root == NULL) return 1;
+	traverse(tb->root, tb);
     
     printf("Hola????\n\n");
     // Test for searching by key
     int key = 500;
     int * iterations = malloc(sizeof(int));
-    entry_t test = search_by_key(key, tb1->root, iterations);
+    entry_t test = search_by_key(key, tb->root, iterations);
     if (test.key <= 0){
         printf("Key %d not found anywhere.\n", key);
         printf("Search iterations: %d\n", *iterations);
@@ -60,15 +83,15 @@ int main(int argc, char **argv){
     free(iterations);
 
 
-    display_database(db1);
-    entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");
-    entry_t * etr2 = create_entry(db1->tables[0]->metadata, db1->tables[0]->metadata->num_of_columns, 5);
-
-	   int status = delete(3, &(tb1->root));
-	   printf("Received status %d\n", status);
-	   printf("Now traversing again\n");
-	   if (tb1->root == NULL) return 1;
-	traverse(tb1->root);
+    /*display_database(db1);*/
+    /*entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");*/
+    /*entry_t * etr2 = create_entry(db1->tables[0]->metadata, db1->tables[0]->metadata->num_of_columns, 5);*/
+    /**/
+    /*int status = delete(3, &(tb->root));*/
+    /*printf("Received status %d\n", status);*/
+    /*printf("Now traversing again\n");*/
+    /*if (tb->root == NULL) return 1;*/
+    /*traverse(tb->root);*/
 
 
     free(db1);
@@ -82,13 +105,21 @@ int main(int argc, char **argv){
 * This function traverses and prints the tree (root, left, right).
 * Root must not be NULL.
 */
-void traverse(node *current){
+void traverse(node *current, table_t * tb){
 	if (current == NULL) return;
-	for (int j=0; j<MAX_KEYS; j++) printf("%d) %d (%d)\n", j+1, current->entries[j].key, current->entries[j].value);
+	for (int j=0; j<MAX_KEYS; j++) {
+        printf("%d) %d (%d) ", j+1, current->entries[j].key, current->entries[j].value);
+        if (current->entries[j].values != NULL){
+            printf("-> %f", *((float *)current->entries[0].values[0]));
+            printf("-> %s", (char*)current->entries[0].values[1]);
+            printf("-> %p", current->entries[0].values);
+        }
+        printf("\n");
+    }
 	printf("\n");
 	for (int i=0; i<MAX_CHILDREN && current->children[i] != NULL; i++){
         printf("Traversing child no %d\n", i);
-		traverse(current->children[i]);
+		traverse(current->children[i], tb);
 	}
 }
 

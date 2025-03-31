@@ -20,7 +20,7 @@
 #define MAX_BTREE_NAME_LENGTH 32
 
 
-void traverse(node *current);
+void traverse(node * current, table_t * tb);
 node * findValue(int id, node * current);
 int getNodeIndex(node * current, int id);
 int getIndexGreatestValue(node * current);

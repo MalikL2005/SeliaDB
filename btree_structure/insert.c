@@ -21,25 +21,28 @@
  * It traverses the tree until the right leaf (where the id is to be inserted) is found.
  * Upon finding the right leaf node, the function calls either insertToNode (if node is not full) or splitNode (if node is full).
 */
-int insert(entry_t entry, node *current, table_t * tb){
+int insert(entry_t * entry, node *current, table_t * tb){
 	// 1. If the tree is empty, allocate a root node and insert the key.
 	if (tb->root == NULL){
 		printf("Root is null\n");
 		node * new_root = malloc(sizeof(node));
-		new_root->entries[0] = entry;
+		new_root->entries[0] = *entry;
 		tb->root = new_root;
 		return 0;
 	}
+    printf("insert recv %p\n", entry->values);
+    printf("insert recv %f\n", *((float *) entry->values[0]));
+    printf("insert recv \"%s\"\n", (char *) entry->values[1]);
 
 	// node is leaf and is not full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key == 0){
 		printf("Leaf node and not full\n");
-		insertToNode(entry, current, &tb->root);
+		insertToNode(*entry, current);
 		return 0;
 	}
 	// node is leaf and is full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key != 0){
-		splitNode(entry, current, &tb->root);
+		splitNode(*entry, current, &tb->root);
 		return 0;
 	}
 
@@ -49,8 +52,8 @@ int insert(entry_t entry, node *current, table_t * tb){
 		int num_of_children = 0;
 		bool is_inserted = false;
 		for (int i=0; i<MAX_CHILDREN && current->entries[i].key > 0; i++){
-			printf("id: %d; current->entries: %d\n", entry.key, current->entries[i].key);
-			if (entry.key <= current->entries[i].key){
+			printf("id: %d; current->entries: %d\n", entry->key, current->entries[i].key);
+			if (entry->key <= current->entries[i].key){
 				insert(entry, current->children[i], tb);
 				is_inserted = true;
 				break;
@@ -58,8 +61,8 @@ int insert(entry_t entry, node *current, table_t * tb){
 			num_of_children ++;
 		}
 		printf("num of children %d\n", num_of_children);
-        printf("entry_t: %d\n", entry.key);
-		if (!is_inserted && entry.key > current->entries[num_of_children].key) insert(entry, current->children[num_of_children], tb);
+        printf("entry_t: %d\n", entry->key);
+		if (!is_inserted && entry->key > current->entries[num_of_children].key) insert(entry, current->children[num_of_children], tb);
 	}
     // Return error-code if no insertion
     return 1;
@@ -243,7 +246,7 @@ void splitNode(entry_t entry, node *current, node **root){
 	// current node is not full
 	else if (current->entries[MAX_KEYS - 1].key == 0){
         if ((*root)->children[1] != NULL && (*root)->children[1]->children[0] != NULL){printf("Children I: %d\n", (*root)->children[1]->entries[0].key);}
-		insertToNode(entry, current, root);
+		insertToNode(entry, current);
         if ((*root)->children[1] != NULL && (*root)->children[1]->children[0] != NULL){printf("Children II: %d\n", (*root)->children[1]->entries[0].key);}
 	}
 }
@@ -254,7 +257,10 @@ void splitNode(entry_t entry, node *current, node **root){
  * Void function that is used to insert a key to a non-full node.
  * This node may be the root, a leaf or an internal node.
 */
-void insertToNode(entry_t entry, node *current, node **root){
+void insertToNode(entry_t entry, node *current){
+    printf("itn recv %p\n", entry.values);
+    printf("itn recv %f\n", *((float *) entry.values[0]));
+    printf("itn recv \"%s\"\n", (char *) entry.values[1]);
 	int placeToInsert;
 	for (placeToInsert=0; placeToInsert<MAX_KEYS; placeToInsert++){
 		if(entry.key <= current->entries[placeToInsert].key || current->entries[placeToInsert].key == 0){
