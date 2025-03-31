@@ -54,8 +54,9 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
             case INTEGER:
                 buffer_int = va_arg(args, int);
                 new_entry->values[i] = malloc(sizeof(int));
-                *((int *) new_entry->values[i]) = buffer_int;
+                *((int*) new_entry->values[i]) = buffer_int;
                 printf("Received int: %d\n", buffer_int);
+                printf("Saved int: %d\n", *((int*) new_entry->values[i]));
                 break;
             case FLOAT:
                 buffer_float = va_arg(args, double);

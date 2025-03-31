@@ -10,7 +10,7 @@ Shortterm
 [ ] func add table (distinct function to create_database because: num_of_tables ++)
 [ ] func delete table 
 [ ] func delete column
-[ ] add values to entry based on columns
+[X] add values to entry based on columns
 
 
 

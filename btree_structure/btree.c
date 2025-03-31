@@ -57,13 +57,16 @@ int main(int argc, char **argv){
     } else {
         printf("Test findings: %d - %d\n", test.key, test.value);
     }
-    /*free(iterations);*/
+    free(iterations);
 
 
     display_database(db1);
-    /*free(db1);*/
 
     entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");
+    entry_t * etr2 = create_entry(db1->tables[0]->metadata, db1->tables[0]->metadata->num_of_columns, 5);
+
+
+    free(db1);
 }
 
 
