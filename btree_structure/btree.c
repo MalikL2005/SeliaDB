@@ -59,7 +59,10 @@ int main(int argc, char **argv){
         vals[0] = fp;
         vals[1] = cp;
 
-        entry_t * entr = &((entry_t){.key=i, .value=i*2, .values=vals});
+        entry_t * entr = malloc(sizeof(entry_t));
+        entr->key = i;
+        entr->value = i * 2;
+        entr->values = vals;
         printf("got %p\n", entr->values);
         printf("got %f\n", *((float*) entr->values[0]));
         printf("got %s\n", (char*) entr->values[1]);
@@ -110,9 +113,9 @@ void traverse(node *current, table_t * tb){
 	for (int j=0; j<MAX_KEYS; j++) {
         printf("%d) %d (%d) ", j+1, current->entries[j].key, current->entries[j].value);
         if (current->entries[j].values != NULL){
-            printf("-> %f", *((float *)current->entries[0].values[0]));
-            printf("-> %s", (char*)current->entries[0].values[1]);
-            printf("-> %p", current->entries[0].values);
+            printf("-> %f", *((float *)current->entries[j].values[0]));
+            printf("-> %s", (char*)current->entries[j].values[1]);
+            printf("-> %p", current->entries[j].values);
         }
         printf("\n");
     }
