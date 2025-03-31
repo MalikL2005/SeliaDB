@@ -28,6 +28,61 @@ database_t * create_database (char * name, int num_of_tables, ...){
 
 
 /*
+* num_of_columns needs to be passed as extra param (even though included in table_metadata_t)
+* because of the nature of vadriatic functions in C
+*/
+entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
+    if (tb->num_of_columns != num_of_columns) {
+        return NULL;
+    }
+    entry_t * new_entry = malloc(sizeof(entry_t));
+    new_entry->values = malloc(sizeof(int *));
+
+    va_list args;
+    va_start(args, num_of_columns);
+    int offset = 0;
+    type_t cur;
+    printf("Creating entry...\n");
+
+    int buffer_int;
+    float buffer_float;
+    char * buffer_varchar;
+    for (int i=0; i<num_of_columns; i++){
+        printf("%d) %s: %s (%d)\n", i, tb->columns[i]->name, get_type_as_string(tb->columns[i]->type), tb->columns[i]->size);
+        cur = tb->columns[i]->type;
+        switch(tb->columns[i]->type){
+            case INTEGER:
+                buffer_int = va_arg(args, int);
+                new_entry->values[i] = malloc(sizeof(int));
+                *((int *) new_entry->values[i]) = buffer_int;
+                printf("Received int: %d\n", buffer_int);
+                break;
+            case FLOAT:
+                buffer_float = va_arg(args, double);
+                new_entry->values[i] = malloc(sizeof(float));
+                *((float*) new_entry->values[i]) = buffer_float;
+                printf("Received float: %f\n", buffer_float);
+                printf("Saved float: %f\n", *((float *) new_entry->values[i]));
+                break;
+            case VARCHAR:
+                buffer_varchar = va_arg(args, char *);
+                new_entry->values[i] = malloc(sizeof(char *));
+                new_entry->values[i] = buffer_varchar;
+                printf("Received varchar: %s\n", buffer_varchar);
+                printf("Saved varchar: %s\n", (char *) new_entry->values[i]);
+                break;
+            default: return NULL;
+        }
+    }
+    va_end(args);
+
+
+    return new_entry;
+}
+
+
+
+/*
 * data -> * table_t (singular)
 */
 table_t * create_table (char * tb_name, int num_of_columns, ...){
@@ -44,7 +99,7 @@ table_t * create_table (char * tb_name, int num_of_columns, ...){
     table_metadata_t * metadata = malloc(sizeof(table_metadata_t));
     metadata->num_of_columns = num_of_columns;
     metadata->columns = columns;
-    tb->metadata = *metadata;
+    tb->metadata = metadata;
     return tb;
 }
 
@@ -137,9 +192,9 @@ void display_column(column_t * col){
 
 void display_table(table_t *tb){
     printf("Name: %s\n", tb->name);
-    printf("Num of cols: %d\n", tb->metadata.num_of_columns);
-    for (int i=0; i<tb->metadata.num_of_columns; i++){
-        display_column(tb->metadata.columns[i]);
+    printf("Num of cols: %d\n", tb->metadata->num_of_columns);
+    for (int i=0; i<tb->metadata->num_of_columns; i++){
+        display_column(tb->metadata->columns[i]);
     }
 }
 

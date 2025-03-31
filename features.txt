@@ -6,11 +6,11 @@ Features that are yet to be implemented
 
 Shortterm 
 
-[X] add columns to database_t
 [ ] func add column (distinct function to create_database because: num_of_cols ++)
 [ ] func add table (distinct function to create_database because: num_of_tables ++)
 [ ] func delete table 
 [ ] func delete column
+[ ] add values to entry based on columns
 
 
 
@@ -19,7 +19,7 @@ Longterm
 [ ] write to file
 [ ] search by value (+ column)
 [ ] add index
-[X] pass node * to each insert function (don´t hardcode root node!)
+[ ] variable varchar length (for more efficient memory usage)
 
 
 

@@ -36,11 +36,11 @@ int main(int argc, char **argv){
         argv[1] = "100";
     }
     int num_to_insert_to = atoi(argv[1]);
-    // Add error handling (behaviour is undefined if argv[1] is not numerical)
+    // Todod: Add error handling (behaviour is undefined if argv[1] is not numerical)
     printf("argv[0]: %s\n", argv[1]);
 	for (int i=1; i<=num_to_insert_to; i++){
         entry_t entr = {.key=i, .value = i*2};
-		insert(entr, db1->root, &db1->root);
+		insert(entr, db1->root, &db1->root, db1->tables[0]->metadata);
 	}
     printf("Now traversing\n");
     if (db1->root == NULL) return 1;
@@ -62,6 +62,8 @@ int main(int argc, char **argv){
 
     display_database(db1);
     /*free(db1);*/
+
+    entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");
 }
 
 

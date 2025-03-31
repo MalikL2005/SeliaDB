@@ -11,8 +11,9 @@
 
 #include "btree.h"
 #include "database.h"
+#include "types.h"
 
-void insert(entry_t entry, node *current, node **root);
+int insert(entry_t entry, node *current, node **root, table_metadata_t * tb);
 entry_t * createTempArr(entry_t entry, node *current);
 void insertToNode(entry_t entry, node *current, node **root);
 void splitNode(entry_t entry, node *current, node **root);

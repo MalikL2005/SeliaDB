@@ -19,7 +19,7 @@ typedef struct varchar_entry_t {
 typedef struct entry_t {
     int key;
     int value;
-    void * values;
+    void ** values;
 } entry_t;
 
 
@@ -54,7 +54,7 @@ typedef struct table_metadata_t {
 
 
 typedef struct table_t {
-    table_metadata_t metadata;
+    table_metadata_t * metadata;
     char * name;
 } table_t;
 

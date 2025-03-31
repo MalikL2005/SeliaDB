@@ -9,4 +9,5 @@ database_t * create_database (char * name, int num_of_tables, ...);
 column_t * create_column (char * name, char * type, int varchar_size);
 void display_database(database_t * db);
 const char * get_type_as_string (type_t tp);
+entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...);
 

@@ -21,26 +21,26 @@
  * It traverses the tree until the right leaf (where the id is to be inserted) is found.
  * Upon finding the right leaf node, the function calls either insertToNode (if node is not full) or splitNode (if node is full).
 */
-void insert(entry_t entry, node *current, node ** root){
+int insert(entry_t entry, node *current, node ** root, table_metadata_t * tb){
 	// 1. If the tree is empty, allocate a root node and insert the key.
 	if (root == NULL){
 		printf("Root is null\n");
 		node * new_root = malloc(sizeof(node));
 		new_root->entries[0] = entry;
 		*root = new_root;
-		return;
+		return 0;
 	}
 
 	// node is leaf and is not full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key == 0){
 		printf("Leaf node and not full\n");
 		insertToNode(entry, current, root);
-		return;
+		return 0;
 	}
 	// node is leaf and is full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key != 0){
 		splitNode(entry, current, root);
-		return;
+		return 0;
 	}
 
 	// node is not leaf
@@ -51,7 +51,7 @@ void insert(entry_t entry, node *current, node ** root){
 		for (int i=0; i<MAX_CHILDREN && current->entries[i].key > 0; i++){
 			printf("id: %d; current->entries: %d\n", entry.key, current->entries[i].key);
 			if (entry.key <= current->entries[i].key){
-				insert(entry, current->children[i], root);
+				insert(entry, current->children[i], root, tb);
 				is_inserted = true;
 				break;
 			}
@@ -59,8 +59,10 @@ void insert(entry_t entry, node *current, node ** root){
 		}
 		printf("num of children %d\n", num_of_children);
         printf("entry_t: %d\n", entry.key);
-		if (!is_inserted && entry.key > current->entries[num_of_children].key) insert(entry, current->children[num_of_children], root);
+		if (!is_inserted && entry.key > current->entries[num_of_children].key) insert(entry, current->children[num_of_children], root, tb);
 	}
+    // Return error-code if no insertion
+    return 1;
 }
 
 
