@@ -60,10 +60,15 @@ int main(int argc, char **argv){
     free(iterations);
 
 
-    display_database(db1);
+    /*display_database(db1);*/
+    /*entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");*/
+    /*entry_t * etr2 = create_entry(db1->tables[0]->metadata, db1->tables[0]->metadata->num_of_columns, 5);*/
 
-    entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");
-    entry_t * etr2 = create_entry(db1->tables[0]->metadata, db1->tables[0]->metadata->num_of_columns, 5);
+    int status = delete(10, &(db1->root));
+    printf("Received status %d\n", status);
+    printf("Now traversing again\n");
+    if (db1->root == NULL) return 1;
+	traverse(db1->root);
 
 
     free(db1);
