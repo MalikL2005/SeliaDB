@@ -13,7 +13,7 @@
 #include "database.h"
 #include "types.h"
 
-int insert(entry_t entry, node *current, node **root, table_metadata_t * tb);
+int insert(entry_t entry, node *current, table_t * tb);
 entry_t * createTempArr(entry_t entry, node *current);
 void insertToNode(entry_t entry, node *current, node **root);
 void splitNode(entry_t entry, node *current, node **root);

@@ -56,6 +56,7 @@ typedef struct table_metadata_t {
 typedef struct table_t {
     table_metadata_t * metadata;
     char * name;
+    node * root;
 } table_t;
 
 

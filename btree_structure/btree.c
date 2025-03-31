@@ -40,17 +40,17 @@ int main(int argc, char **argv){
     printf("argv[0]: %s\n", argv[1]);
 	for (int i=1; i<=num_to_insert_to; i++){
         entry_t entr = {.key=i, .value = i*2};
-		insert(entr, db1->root, &db1->root, db1->tables[0]->metadata);
+		insert(entr, tb1->root, tb1);
 	}
     printf("Now traversing\n");
-    if (db1->root == NULL) return 1;
-	traverse(db1->root);
+    if (tb1->root == NULL) return 1;
+	traverse(tb1->root);
     
     printf("Hola????\n\n");
     // Test for searching by key
     int key = 500;
     int * iterations = malloc(sizeof(int));
-    entry_t test = search_by_key(key, db1->root, iterations);
+    entry_t test = search_by_key(key, tb1->root, iterations);
     if (test.key <= 0){
         printf("Key %d not found anywhere.\n", key);
         printf("Search iterations: %d\n", *iterations);
@@ -64,11 +64,11 @@ int main(int argc, char **argv){
     /*entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");*/
     /*entry_t * etr2 = create_entry(db1->tables[0]->metadata, db1->tables[0]->metadata->num_of_columns, 5);*/
 
-    int status = delete(10, &(db1->root));
-    printf("Received status %d\n", status);
-    printf("Now traversing again\n");
-    if (db1->root == NULL) return 1;
-	traverse(db1->root);
+	/*   int status = delete(9, &(tb1->root));*/
+	/*   printf("Received status %d\n", status);*/
+	/*   printf("Now traversing again\n");*/
+	/*   if (tb1->root == NULL) return 1;*/
+	/*traverse(tb1->root);*/
 
 
     free(db1);

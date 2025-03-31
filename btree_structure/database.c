@@ -101,6 +101,7 @@ table_t * create_table (char * tb_name, int num_of_columns, ...){
     metadata->num_of_columns = num_of_columns;
     metadata->columns = columns;
     tb->metadata = metadata;
+    tb->root = malloc(sizeof(node));
     return tb;
 }
 
