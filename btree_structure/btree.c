@@ -36,7 +36,7 @@ int main(int argc, char **argv){
         argv[1] = "100";
     }
     int num_to_insert_to = atoi(argv[1]);
-    // Todod: Add error handling (behaviour is undefined if argv[1] is not numerical)
+    // Todo: Add error handling (behaviour is undefined if argv[1] is not numerical)
     printf("argv[0]: %s\n", argv[1]);
 	for (int i=1; i<=num_to_insert_to; i++){
         entry_t entr = {.key=i, .value = i*2};
@@ -60,15 +60,15 @@ int main(int argc, char **argv){
     free(iterations);
 
 
-    /*display_database(db1);*/
-    /*entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");*/
-    /*entry_t * etr2 = create_entry(db1->tables[0]->metadata, db1->tables[0]->metadata->num_of_columns, 5);*/
+    display_database(db1);
+    entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");
+    entry_t * etr2 = create_entry(db1->tables[0]->metadata, db1->tables[0]->metadata->num_of_columns, 5);
 
-	/*   int status = delete(9, &(tb1->root));*/
-	/*   printf("Received status %d\n", status);*/
-	/*   printf("Now traversing again\n");*/
-	/*   if (tb1->root == NULL) return 1;*/
-	/*traverse(tb1->root);*/
+	   int status = delete(3, &(tb1->root));
+	   printf("Received status %d\n", status);
+	   printf("Now traversing again\n");
+	   if (tb1->root == NULL) return 1;
+	traverse(tb1->root);
 
 
     free(db1);
