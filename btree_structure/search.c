@@ -12,7 +12,7 @@
 
 
 #include "search.h"
-#include "btree.h"
+#include "types.h"
 
 
 struct entry_t search_by_key(int key, node * current, int * search_iterations){
@@ -46,6 +46,52 @@ struct entry_t search_by_key(int key, node * current, int * search_iterations){
 
 
 
+/*
+* Compares two values of any type_t
+* Returns 1 if val1 is greater
+* Returns 0 if values are equal
+* Returns -1 if val1 is smaller
+* (similar to strcmp)
+* Other return values indicate errors
+*/
+int compare_values(type_t type, void * val1, void * val2){
+    switch (type){
+        case INTEGER:
+            if (*(int*)val1 > *(int*)val2){
+                return 1;
+            }
+            else if (*(int*)val1 < *(int*)val2){
+                return -1;
+            } else if (*(int*)val1 == *(int*)val2){
+                return 0;
+            }         
+        case FLOAT:
+            if (*(float*)val1 > *(float*)val2){
+                return 1;
+            }
+            else if (*(float*)val1 < *(float*)val2){
+                return -1;
+            } else if (*(float*)val1 == *(float*)val2){
+                return 0;
+            }
+        case VARCHAR:
+            return strcmp((char*)val1, (char*)val2);
+        case BOOL:
+            if ((bool) val1 == (bool) val2){
+                return 0;
+            }
+            return 1;
+        case NONE:
+            if (val1 == NULL && val2 == NULL){
+                return 0;
+            }
+            return 1;
+        default:
+            return 1000;
+    }
+}
+
+
 
 /*
  *
@@ -53,14 +99,18 @@ struct entry_t search_by_key(int key, node * current, int * search_iterations){
  *
  * 
 */
-entry_t search_by_value(int value, node * current){
+entry_t search_by_value(node * current, void * value, type_t tp, column_t * col){
     if (current == NULL){
         return (entry_t) {0,0};
     }
-    for (int i=0; i<MAX_KEYS || current->entries[i].key <= 0; i++){
-        if (current->entries[i].value == value){
+    for (int i=0; i<MAX_KEYS || current->entries[i].values[i] != NULL; i++){
+        if (current->entries[i].values[i] == value){
             return current->entries[i];
         }
+    }
+    // traverse children
+    for (int i=0; i<MAX_CHILDREN || current->children[i] != NULL; i++){
+        /*return search_by_value((int*)value, current->children[i], col);*/
     }
     return (entry_t) {0,0};
 }

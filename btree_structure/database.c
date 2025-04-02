@@ -8,21 +8,21 @@
 #include "types.h"
 
 
-database_t * create_database (char * name, int num_of_tables, ...){
+database_t * create_database (database_t * db, table_t ** pTb, char * name, int num_of_tables, ...){
     // multiple table_t * to one table_t**
     va_list args;
     va_start(args, num_of_tables);
-    table_t ** tables = malloc(sizeof(table_t *));
+    /*table_t ** tables = malloc(sizeof(table_t *));*/
+    pTb = malloc(sizeof(table_t *)*num_of_tables);
     for (int i=0; i<num_of_tables; i++){
-        tables[i] = va_arg(args, table_t *);
+        pTb[i] = va_arg(args, table_t *);
     }
     va_end(args);
 
-    database_t * db = malloc(sizeof(database_t));
     db->name = name;
     db->root = malloc(sizeof(node));
     db->num_of_tables = num_of_tables;
-    db->tables = tables;
+    db->tables = pTb;
     return db;
 }
 
@@ -33,6 +33,7 @@ database_t * create_database (char * name, int num_of_tables, ...){
 */
 entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
     if (tb->num_of_columns != num_of_columns) {
+        printf("warning: returning NULL entry\n");
         return NULL;
     }
     void ** vals = malloc(sizeof(int)* tb->num_of_columns);
@@ -47,9 +48,10 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
     int num_of_pChars = 0;
     int * buffer_int = malloc(sizeof(int) * tb->num_of_columns);
     int num_of_ints = 0; 
+    bool * buffer_bool = malloc(sizeof(bool));
 
     for (int i=0; i<num_of_columns; i++){
-        printf("%d) %s: %s (%d)\n", i, tb->columns[i]->name, get_type_as_string(tb->columns[i]->type), tb->columns[i]->size);
+        /*printf("%d) %s: %s (%d)\n", i, tb->columns[i]->name, get_type_as_string(tb->columns[i]->type), tb->columns[i]->size);*/
         switch(tb->columns[i]->type){
             case INTEGER:
                 buffer_int[num_of_ints] = va_arg(args, int);
@@ -68,7 +70,13 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
                 free(buffer_varchar[num_of_pChars]);
                 printf("Got varchar %s\n", (char *) vals[i]);
                 break;
-            default: return NULL;
+            case BOOL:
+                *buffer_bool = (bool) va_arg(args, int);
+                printf("Got bool %b\n", *buffer_bool);
+                break;
+            default: 
+                printf("Warning: returning NULL entry for type %s\n", get_type_as_string(tb->columns[i]->type));
+                return NULL;
         }
     }
     va_end(args);
@@ -81,10 +89,9 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
     free(buffer_float);
     free(buffer_int);
 
-    /*printf("create entry got %p\n", new_entry->values);*/
-    /*printf("got %f\n", *(float*) new_entry->values[0]);*/
-    /*printf("got addr %p\n", new_entry->values[0]);*/
-    /*printf("got %s\n", (char*) new_entry->values[1]);*/
+    printf("create entry got %p\n", new_entry->values);
+    printf("returning int %d\n", *((int*) new_entry->values[0]));
+    printf("Got int %d\n", *(int *) vals[0]);
 
     return new_entry;
 }
@@ -97,7 +104,7 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
 table_t * create_table (char * tb_name, int num_of_columns, ...){
     va_list args;
     va_start(args, num_of_columns);
-    column_t ** columns = malloc(sizeof(column_t *));
+    column_t ** columns = malloc(sizeof(column_t *)*num_of_columns);
     for (int i=0; i<num_of_columns; i++){
         columns[i] = va_arg(args, column_t *);
     }
@@ -158,7 +165,7 @@ column_t * create_column (char * name, char * type, int varchar_size){
             break;
         case BOOL:
             col->type = BOOL;
-            col->size = sizeof(BOOL);
+            col->size = sizeof(bool);
             break;
         default: 
             printf("Error: Could not create column because of invalid type.");
@@ -190,15 +197,7 @@ void print_sep(){
 
 
 void display_column(column_t * col){
-    char * tp;
-    switch(col->type){
-        case INTEGER: tp="INTEGER"; break;
-        case FLOAT: tp="FLOAT"; break;
-        case VARCHAR: tp="VARCHAR"; break;
-        case BOOL: tp="BOOL"; break;
-        case NONE: tp="NONE";
-    }
-    printf("- %s (%s -> %d)\n", col->name, tp, col->size);
+    printf("- %s (%s -> %d)\n", col->name, get_type_as_string(col->type), col->size);
 }
 
 void display_table(table_t *tb){

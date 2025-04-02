@@ -28,11 +28,13 @@ int insert(entry_t * entry, node *current, table_t * tb){
 		node * new_root = malloc(sizeof(node));
 		new_root->entries[0] = *entry;
 		tb->root = new_root;
+        free(new_root);
 		return 0;
 	}
-    printf("insert recv %p\n", entry->values);
-    printf("insert recv %f\n", *((float *) entry->values[0]));
-    printf("insert recv \"%s\"\n", (char *) entry->values[1]);
+    if (entry != NULL){
+        printf("insert recv %p\n", entry->values);
+        printf("insert recv %d\n", *((int*) entry->values[0]));
+    }
 
 	// node is leaf and is not full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key == 0){
@@ -116,7 +118,6 @@ entry_t * createTempArr(entry_t entry, node *current){
 * return value of NULL indicates error
 */
 entry_t insertDefaultValues(table_metadata_t * tb){
-    /*void * vals = malloc(sizeof(char)*500);*/
     int offset = 0;
     for (int i=0; i<tb->num_of_columns; i++){
         printf("Size of [%s] this is %d\n", get_type_as_string(tb->columns[i]->type), tb->columns[i]->size);
@@ -148,7 +149,7 @@ void splitNode(entry_t entry, node *current, node **root){
 		printf("SN Middle id: %d\n", middle_id.key);
 
 		// create two seperate nodes
-		node *new_left = malloc(sizeof(node));
+		node *new_left = (node *) malloc(sizeof(node));
 		node *new_right = malloc(sizeof(node));
 
 		// copy ids to new nodes
@@ -334,7 +335,7 @@ node * findParent(node * target, node * current){
 			return findParent(target, current->children[index]);
 		}
 	}
-    return NULL, current;
+    return current;
 }
 
 

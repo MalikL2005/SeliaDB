@@ -29,40 +29,40 @@ int main(int argc, char **argv){
     column_t * col3 = create_column("Column3", "VARCHAR", 255);
     table_t * tb1 = create_table("Table1", 1, col1);
     table_t * tb2 = create_table("Table2", 2, col2, col3);
-    add_column(tb2, col1);
-    database_t * db1 = create_database("MY_DB", 2, tb1, tb2);
-    db1->root = malloc(sizeof(node));
+    /*add_column(tb2, col1);*/
+    database_t db_buffer = (database_t){};
+    table_t ** pTb;
+    database_t * db1 = create_database(&db_buffer, pTb, "MY_DB", 2, tb1, tb2);
     if (argc < 2){
         printf("Usage: btree [num_to_insert_to]\nDefaulting to 100");
         argv[1] = "100";
     }
+
+
+    free(col1);
+    free(col2);
+    free(col3);
     int num_to_insert_to = atoi(argv[1]);
 
 
-    table_t * tb = tb2;
-    // Todo: Add error handling (behaviour is undefined if argv[1] is not numerical)
-    printf("argv[0]: %s\n", argv[1]);
+    table_t * tb = tb1;
+    printf("argv[0]: %s\n", argv[1]); // Todo: Add error handling (behaviour is undefined if argv[1] is not numerical)
 	for (int i=1; i<=num_to_insert_to; i++){
-
-
-        char * t = "Hello";
-        if (i == 2) t = "World";
-        
-        entry_t * entr = create_entry(tb->metadata, tb->metadata->num_of_columns, (float) i-0.3, t, i*10);
-        /*printf("main got %p\n", entr->values);*/
-        /*printf("got %f\n", *(float*) entr->values[0]);*/
-        /*printf("got addr %p\n", entr->values[0]);*/
-        /*printf("got %s\n", (char*) entr->values[1]);*/
+        entry_t * entr = create_entry(tb->metadata, tb->metadata->num_of_columns, i*10);
+        printf("main got %p\n", entr->values);
+        printf("got %d\n", *(int *) entr->values[0]);
 		insert(entr, tb->root, tb);
 	}
 
     printf("Now traversing\n");
-    if (tb->root == NULL) return 1;
+    printf("Hello World\n");
+    printf("Reached");
 	traverse(tb->root, tb);
+    if (tb == NULL) return 1;
     
     // Test for searching by key
     int key = 500;
-    int * iterations = malloc(sizeof(int));
+    int * iterations;
     entry_t test = search_by_key(key, tb->root, iterations);
     if (test.key <= 0){
         printf("Key %d not found anywhere.\n", key);
@@ -83,8 +83,6 @@ int main(int argc, char **argv){
     /*if (tb->root == NULL) return 1;*/
     /*traverse(tb->root);*/
 
-
-    free(db1);
 }
 
 

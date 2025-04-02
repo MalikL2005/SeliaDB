@@ -89,7 +89,7 @@ int delete(int value, node ** root){
 	// internal node
 	if (current->children[0] != NULL){
 		int child_index = getNodeIndex(current, value);
-		int greatest_value = getIndexGreatestValue(current);
+		/*int greatest_value = getIndexGreatestValue(current);*/
 
 		int i_greatest_left = getIndexGreatestValue(current->children[child_index]);
 		int num_of_keys_right = getIndexGreatestValue(current->children[child_index + 1]);
@@ -339,7 +339,7 @@ int pushChildUp(node * current, int value, int index, int child_index, bool chil
 	printf("Child value: %d\n", child_value.key);
 
 	printf("removal %d\n", rem);
-
+    return 0;
 }
 
 
