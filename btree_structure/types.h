@@ -68,4 +68,13 @@ typedef struct database_t {
 } database_t;
 
 
+typedef struct buffer_t {
+    float * float_b;
+    int num_of_floats;
+    int * int_b;
+    int num_of_ints;
+    char ** char_b;
+    int num_of_pChars;
+} buffer_t;
+
 #endif

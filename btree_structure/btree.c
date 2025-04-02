@@ -24,32 +24,54 @@
 
 
 int main(int argc, char **argv){
-    column_t * col1 = create_column("Column1", "INTEGER", 0);
-    column_t * col2 = create_column("Column2", "FLOAT", 0);
-    column_t * col3 = create_column("Column3", "VARCHAR", 255);
-    table_t * tb1 = create_table("Table1", 1, col1);
-    table_t * tb2 = create_table("Table2", 2, col2, col3);
+
+    // Create columns
+    column_t * col1 = malloc(sizeof(column_t));
+    column_t * col2 = malloc(sizeof(column_t));
+    column_t * col3 = malloc(sizeof(column_t));
+    if (create_column(col1, "Column1", "INTEGER", 0) != 0){
+        printf("Error: could not create column\n");
+        return -1;
+    }
+    if (create_column(col2, "Column2", "FLOAT", 0) != 0){
+        printf("Error: could not create column\n");
+        return -1;
+    }
+    if (create_column(col3, "Column3", "VARCHAR", 255) != 0){
+        printf("Error: could not create column\n");
+        return -1;
+    }
+    table_t * tb1 = malloc(sizeof(table_t));
+    table_t * tb2 = malloc(sizeof(table_t));
+    if (create_table(tb1, "Table1", 1, col1) != 0){
+        printf("Error: could not create table\n");
+        return -1;
+    }
+    if (create_table(tb2, "Table2", 1, col1) != 0){
+        printf("Error: could not create table\n");
+        return -1;
+    }
     /*add_column(tb2, col1);*/
-    database_t db_buffer = (database_t){};
+    database_t * db1 = malloc(sizeof(database_t));
     table_t ** pTb;
-    database_t * db1 = create_database(&db_buffer, pTb, "MY_DB", 2, tb1, tb2);
+    int a = create_database(db1, pTb, "MY_DB", 2, tb1, tb2);
     if (argc < 2){
         printf("Usage: btree [num_to_insert_to]\nDefaulting to 100");
         argv[1] = "100";
     }
 
 
-    free(col1);
-    free(col2);
-    free(col3);
     int num_to_insert_to = atoi(argv[1]);
 
 
     table_t * tb = tb1;
     printf("argv[0]: %s\n", argv[1]); // Todo: Add error handling (behaviour is undefined if argv[1] is not numerical)
 	for (int i=1; i<=num_to_insert_to; i++){
-        entry_t * entr = create_entry(tb->metadata, tb->metadata->num_of_columns, i*10);
-        printf("main got %p\n", entr->values);
+        buffer_t bf = (buffer_t) {};
+    /*buffer_t bf = (buffer_t){malloc(sizeof(float)*tb->metadata->num_of_columns), 0, malloc(sizeof(int)*tb->metadata->num_of_columns), 0, malloc(sizeof(char *)*tb->metadata->num_of_columns), 0};*/
+        entry_t * buffer_entry = malloc(sizeof(entry_t));
+        entry_t * entr = create_entry(buffer_entry, bf, tb->metadata, tb->metadata->num_of_columns, i);
+        printf("main got %p\n", entr);
         printf("got %d\n", *(int *) entr->values[0]);
 		insert(entr, tb->root, tb);
 	}
@@ -72,6 +94,12 @@ int main(int argc, char **argv){
     }
     free(iterations);
 
+    free(col1);
+    free(col2);
+    free(col3);
+
+    free(tb1);
+    free(tb2);
 
     /*display_database(db1);*/
     /*entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");*/

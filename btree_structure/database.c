@@ -8,12 +8,11 @@
 #include "types.h"
 
 
-database_t * create_database (database_t * db, table_t ** pTb, char * name, int num_of_tables, ...){
+int create_database (database_t * db, table_t ** pTb, char * name, int num_of_tables, ...){
     // multiple table_t * to one table_t**
     va_list args;
     va_start(args, num_of_tables);
-    /*table_t ** tables = malloc(sizeof(table_t *));*/
-    pTb = malloc(sizeof(table_t *)*num_of_tables);
+    pTb = malloc(sizeof(column_t*)*num_of_tables);
     for (int i=0; i<num_of_tables; i++){
         pTb[i] = va_arg(args, table_t *);
     }
@@ -23,7 +22,7 @@ database_t * create_database (database_t * db, table_t ** pTb, char * name, int 
     db->root = malloc(sizeof(node));
     db->num_of_tables = num_of_tables;
     db->tables = pTb;
-    return db;
+    return 0;
 }
 
 
@@ -31,51 +30,45 @@ database_t * create_database (database_t * db, table_t ** pTb, char * name, int 
 * num_of_columns needs to be passed as extra param (even though included in table_metadata_t)
 * because of the nature of vadriatic functions in C
 */
-entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
+entry_t * create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t * tb, int num_of_columns, ...){
     if (tb->num_of_columns != num_of_columns) {
         printf("warning: returning NULL entry\n");
         return NULL;
     }
     void ** vals = malloc(sizeof(int)* tb->num_of_columns);
-    entry_t * new_entry = malloc(sizeof(entry_t));
+    buffer = (buffer_t){malloc(sizeof(float)*num_of_columns), 0, malloc(sizeof(int)*num_of_columns), 0, malloc(sizeof(char *)*num_of_columns), 0};
 
     va_list args;
     va_start(args, num_of_columns);
     printf("Creating entry...\n");
-    float * buffer_float = malloc(sizeof(float) * tb->num_of_columns);
-    int num_of_floats = 0;
-    char ** buffer_varchar = malloc(sizeof(char *) * tb->num_of_columns);
-    int num_of_pChars = 0;
-    int * buffer_int = malloc(sizeof(int) * tb->num_of_columns);
-    int num_of_ints = 0; 
-    bool * buffer_bool = malloc(sizeof(bool));
 
     for (int i=0; i<num_of_columns; i++){
         /*printf("%d) %s: %s (%d)\n", i, tb->columns[i]->name, get_type_as_string(tb->columns[i]->type), tb->columns[i]->size);*/
         switch(tb->columns[i]->type){
             case INTEGER:
-                buffer_int[num_of_ints] = va_arg(args, int);
-                vals[i] = &buffer_int[num_of_ints++];
+                buffer.int_b[buffer.num_of_ints] = va_arg(args, int);
+                vals[i] = &buffer.int_b[buffer.num_of_ints++];
                 printf("Got int %d\n", *(int *) vals[i]);
                 break;
             case FLOAT:
                 /*buffer_float[num_of_floats] = malloc(sizeof(float));*/
-                buffer_float[num_of_floats] = va_arg(args, double);
-                vals[i] = &buffer_float[num_of_floats++];
+                buffer.float_b[buffer.num_of_floats] = va_arg(args, double);
+                vals[i] = &buffer.float_b[buffer.num_of_floats++];
                 printf("Got float %f\n", *(float *) vals[i]);
                 break;
             case VARCHAR:
-                buffer_varchar[num_of_pChars] = va_arg(args, char *);
-                vals[i] = buffer_varchar[num_of_pChars++];
-                free(buffer_varchar[num_of_pChars]);
+                buffer.char_b[buffer.num_of_pChars] = va_arg(args, char *);
+                vals[i] = buffer.char_b[buffer.num_of_pChars++];
                 printf("Got varchar %s\n", (char *) vals[i]);
                 break;
             case BOOL:
-                *buffer_bool = (bool) va_arg(args, int);
-                printf("Got bool %b\n", *buffer_bool);
+                printf("Got bool\n");
                 break;
             default: 
                 printf("Warning: returning NULL entry for type %s\n", get_type_as_string(tb->columns[i]->type));
+                free(buffer.char_b);
+                free(buffer.float_b);
+                free(buffer.int_b);
                 return NULL;
         }
     }
@@ -85,13 +78,12 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
     new_entry->value = tb->last_index * 2;
     tb->last_index ++;
 
-    free(buffer_varchar);
-    free(buffer_float);
-    free(buffer_int);
-
     printf("create entry got %p\n", new_entry->values);
-    printf("returning int %d\n", *((int*) new_entry->values[0]));
-    printf("Got int %d\n", *(int *) vals[0]);
+    printf("returning int %d\n", *(int*) new_entry->values[0]);
+
+    free(buffer.char_b);
+    free(buffer.float_b);
+    free(buffer.int_b);
 
     return new_entry;
 }
@@ -101,7 +93,7 @@ entry_t * create_entry (table_metadata_t * tb, int num_of_columns, ...){
 /*
 * data -> * table_t (singular)
 */
-table_t * create_table (char * tb_name, int num_of_columns, ...){
+int create_table (table_t * tb, char * tb_name, int num_of_columns, ...){
     va_list args;
     va_start(args, num_of_columns);
     column_t ** columns = malloc(sizeof(column_t *)*num_of_columns);
@@ -110,7 +102,6 @@ table_t * create_table (char * tb_name, int num_of_columns, ...){
     }
     va_end(args);
 
-    table_t * tb = malloc(sizeof(table_t));
     tb->name = tb_name;
     table_metadata_t * metadata = malloc(sizeof(table_metadata_t));
     metadata->num_of_columns = num_of_columns;
@@ -118,7 +109,7 @@ table_t * create_table (char * tb_name, int num_of_columns, ...){
     metadata->last_index = 1;
     tb->metadata = metadata;
     tb->root = malloc(sizeof(node));
-    return tb;
+    return 0;
 }
 
 
@@ -145,8 +136,7 @@ type_t determine_type (char * type_name){
 }
 
 
-column_t * create_column (char * name, char * type, int varchar_size){
-    column_t * col = malloc(sizeof(column_t));
+int create_column (column_t * col, char * name, char * type, int varchar_size){
     col->name = name;
     // Todo make string uppercase
     type_t t = determine_type(type);
@@ -169,9 +159,9 @@ column_t * create_column (char * name, char * type, int varchar_size){
             break;
         default: 
             printf("Error: Could not create column because of invalid type.");
-            return NULL;
+            return -1;
     }
-    return col;
+    return 0;
 }
 
 

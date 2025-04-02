@@ -260,8 +260,7 @@ void splitNode(entry_t entry, node *current, node **root){
 */
 void insertToNode(entry_t entry, node *current){
     printf("itn recv %p\n", entry.values);
-    printf("itn recv %f\n", *((float *) entry.values[0]));
-    printf("itn recv \"%s\"\n", (char *) entry.values[1]);
+    printf("itn recv %d\n", *((int*) entry.values[0]));
 	int placeToInsert;
 	for (placeToInsert=0; placeToInsert<MAX_KEYS; placeToInsert++){
 		if(entry.key <= current->entries[placeToInsert].key || current->entries[placeToInsert].key == 0){
