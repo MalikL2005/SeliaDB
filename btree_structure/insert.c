@@ -25,17 +25,10 @@ int insert(entry_t * entry, node *current, table_t * tb){
 	// 1. If the tree is empty, allocate a root node and insert the key.
 	if (tb->root == NULL){
 		printf("Root is null\n");
-		node * new_root = malloc(sizeof(node));
-		new_root->entries[0] = *entry;
-		tb->root = new_root;
-        free(new_root);
+		tb->root = malloc(sizeof(node));
+		tb->root->entries[0] = *entry;
 		return 0;
 	}
-    if (entry != NULL){
-        printf("insert recv %p\n", entry->values);
-        printf("insert recv %d\n", *((int*) entry->values[0]));
-    }
-
 	// node is leaf and is not full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key == 0){
 		printf("Leaf node and not full\n");
@@ -259,8 +252,6 @@ void splitNode(entry_t entry, node *current, node **root){
  * This node may be the root, a leaf or an internal node.
 */
 void insertToNode(entry_t entry, node *current){
-    printf("itn recv %p\n", entry.values);
-    printf("itn recv %d\n", *((int*) entry.values[0]));
 	int placeToInsert;
 	for (placeToInsert=0; placeToInsert<MAX_KEYS; placeToInsert++){
 		if(entry.key <= current->entries[placeToInsert].key || current->entries[placeToInsert].key == 0){

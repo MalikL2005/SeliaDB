@@ -26,9 +26,9 @@
 int main(int argc, char **argv){
 
     // Create columns
-    column_t * col1 = malloc(sizeof(column_t));
-    column_t * col2 = malloc(sizeof(column_t));
-    column_t * col3 = malloc(sizeof(column_t));
+    column_t * col1 = &(column_t){};
+    column_t * col2 = &(column_t){};
+    column_t * col3 = &(column_t){};
     if (create_column(col1, "Column1", "INTEGER", 0) != 0){
         printf("Error: could not create column\n");
         return -1;
@@ -41,8 +41,8 @@ int main(int argc, char **argv){
         printf("Error: could not create column\n");
         return -1;
     }
-    table_t * tb1 = malloc(sizeof(table_t));
-    table_t * tb2 = malloc(sizeof(table_t));
+    table_t * tb1 = &((table_t){});
+    table_t * tb2 = &((table_t){});
     if (create_table(tb1, "Table1", 1, col1) != 0){
         printf("Error: could not create table\n");
         return -1;
@@ -52,8 +52,8 @@ int main(int argc, char **argv){
         return -1;
     }
     /*add_column(tb2, col1);*/
-    database_t * db1 = malloc(sizeof(database_t));
-    table_t ** pTb;
+    database_t * db1 = &((database_t){});
+    table_t ** pTb = malloc(sizeof(column_t*)*2);
     int a = create_database(db1, pTb, "MY_DB", 2, tb1, tb2);
     if (argc < 2){
         printf("Usage: btree [num_to_insert_to]\nDefaulting to 100");
@@ -69,22 +69,23 @@ int main(int argc, char **argv){
 	for (int i=1; i<=num_to_insert_to; i++){
         buffer_t bf = (buffer_t) {};
     /*buffer_t bf = (buffer_t){malloc(sizeof(float)*tb->metadata->num_of_columns), 0, malloc(sizeof(int)*tb->metadata->num_of_columns), 0, malloc(sizeof(char *)*tb->metadata->num_of_columns), 0};*/
-        entry_t * buffer_entry = malloc(sizeof(entry_t));
-        entry_t * entr = create_entry(buffer_entry, bf, tb->metadata, tb->metadata->num_of_columns, i);
-        printf("main got %p\n", entr);
-        printf("got %d\n", *(int *) entr->values[0]);
-		insert(entr, tb->root, tb);
+        entry_t * buffer_entry = &((entry_t){});
+        if (create_entry(buffer_entry, bf, tb->metadata, tb->metadata->num_of_columns, i*100) != 0){
+            printf("Failed to get entry\n");
+            return 1;
+        }
+		insert(buffer_entry, tb->root, tb);
 	}
 
     printf("Now traversing\n");
     printf("Hello World\n");
-    printf("Reached");
 	traverse(tb->root, tb);
     if (tb == NULL) return 1;
     
     // Test for searching by key
     int key = 500;
-    int * iterations;
+    int * iterations = malloc(sizeof(int));
+    *iterations = 0;
     entry_t test = search_by_key(key, tb->root, iterations);
     if (test.key <= 0){
         printf("Key %d not found anywhere.\n", key);
@@ -94,12 +95,9 @@ int main(int argc, char **argv){
     }
     free(iterations);
 
-    free(col1);
-    free(col2);
-    free(col3);
+    free(pTb);
+    free(tb1->metadata->columns);
 
-    free(tb1);
-    free(tb2);
 
     /*display_database(db1);*/
     /*entry_t * etr = create_entry(db1->tables[1]->metadata, db1->tables[1]->metadata->num_of_columns, 4.5, "HelloThere");*/
@@ -123,13 +121,23 @@ int main(int argc, char **argv){
 */
 void traverse(node *current, table_t * tb){
 	if (current == NULL) return;
-	for (int j=0; j<MAX_KEYS; j++) {
-        printf("%d) %d (%d) ", j+1, current->entries[j].key, current->entries[j].value);
-        if (current->entries[j].values != NULL){
-            printf("-> %f", *((float *)current->entries[j].values[0]));
-            printf("-> %s", (char*)current->entries[j].values[1]);
-            printf("-> %d", *(int *)current->entries[j].values[2]);
-            printf("-> %p", current->entries[j].values);
+	for (int i=0; i<MAX_KEYS; i++) {
+        printf("%d) %d (%d) ", i+1, current->entries[i].key, current->entries[i].value);
+        if (current->entries[i].values != NULL){
+            for (int j=0; j<tb->metadata->num_of_columns; j++){
+                switch(tb->metadata->columns[j]->type){
+                    case INTEGER:
+                        printf("-> %d", *(int *)current->entries[i].values[j]);
+                        break;
+                    case FLOAT:
+                        printf("-> %f", *(float *)current->entries[i].values[j]);
+                        break;
+                    case VARCHAR:
+                        printf("-> %s", (char *)current->entries[i].values[j]);
+                        break;
+                    default: printf("-> UNKNOWN TYPE");
+                }
+            }
         }
         printf("\n");
     }

@@ -12,7 +12,7 @@ int create_database (database_t * db, table_t ** pTb, char * name, int num_of_ta
     // multiple table_t * to one table_t**
     va_list args;
     va_start(args, num_of_tables);
-    pTb = malloc(sizeof(column_t*)*num_of_tables);
+    /*pTb = malloc(sizeof(column_t*)*num_of_tables);*/
     for (int i=0; i<num_of_tables; i++){
         pTb[i] = va_arg(args, table_t *);
     }
@@ -30,10 +30,10 @@ int create_database (database_t * db, table_t ** pTb, char * name, int num_of_ta
 * num_of_columns needs to be passed as extra param (even though included in table_metadata_t)
 * because of the nature of vadriatic functions in C
 */
-entry_t * create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t * tb, int num_of_columns, ...){
+int create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t * tb, int num_of_columns, ...){
     if (tb->num_of_columns != num_of_columns) {
         printf("warning: returning NULL entry\n");
-        return NULL;
+        return -1;
     }
     void ** vals = malloc(sizeof(int)* tb->num_of_columns);
     buffer = (buffer_t){malloc(sizeof(float)*num_of_columns), 0, malloc(sizeof(int)*num_of_columns), 0, malloc(sizeof(char *)*num_of_columns), 0};
@@ -48,18 +48,18 @@ entry_t * create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t *
             case INTEGER:
                 buffer.int_b[buffer.num_of_ints] = va_arg(args, int);
                 vals[i] = &buffer.int_b[buffer.num_of_ints++];
-                printf("Got int %d\n", *(int *) vals[i]);
+                printf("Got int\n");
                 break;
             case FLOAT:
                 /*buffer_float[num_of_floats] = malloc(sizeof(float));*/
                 buffer.float_b[buffer.num_of_floats] = va_arg(args, double);
                 vals[i] = &buffer.float_b[buffer.num_of_floats++];
-                printf("Got float %f\n", *(float *) vals[i]);
+                printf("Got float\n");
                 break;
             case VARCHAR:
                 buffer.char_b[buffer.num_of_pChars] = va_arg(args, char *);
                 vals[i] = buffer.char_b[buffer.num_of_pChars++];
-                printf("Got varchar %s\n", (char *) vals[i]);
+                printf("Got varchar\n");
                 break;
             case BOOL:
                 printf("Got bool\n");
@@ -69,7 +69,7 @@ entry_t * create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t *
                 free(buffer.char_b);
                 free(buffer.float_b);
                 free(buffer.int_b);
-                return NULL;
+                return -1;
         }
     }
     va_end(args);
@@ -78,14 +78,8 @@ entry_t * create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t *
     new_entry->value = tb->last_index * 2;
     tb->last_index ++;
 
-    printf("create entry got %p\n", new_entry->values);
-    printf("returning int %d\n", *(int*) new_entry->values[0]);
 
-    free(buffer.char_b);
-    free(buffer.float_b);
-    free(buffer.int_b);
-
-    return new_entry;
+    return 0;
 }
 
 
