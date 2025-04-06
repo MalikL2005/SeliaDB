@@ -26,9 +26,16 @@ int insert(entry_t * entry, node *current, table_t * tb){
 	if (tb->root == NULL){
 		printf("Root is null\n");
 		tb->root = malloc(sizeof(node));
+        tb->root->entries = malloc(sizeof(entry_t)*MAX_KEYS);
 		tb->root->entries[0] = *entry;
 		return 0;
 	}
+    if (current->children == NULL){
+        tb->root->children = malloc(sizeof(node *) * MAX_CHILDREN);
+    }
+    if (current->entries == NULL){
+        tb->root->entries = malloc(sizeof(entry_t) * MAX_KEYS);
+    }
 	// node is leaf and is not full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key == 0){
 		printf("Leaf node and not full\n");
@@ -70,10 +77,7 @@ int insert(entry_t * entry, node *current, table_t * tb){
  * It is called when a node has reached MAX_KEYS.
  * Therefore, it creates an array of size MAX_KEYS + 1 (because the node (current) overflows.
 */
-entry_t * createTempArr(entry_t entry, node *current){
-	// create temporary overflowing array with all ids
-	struct entry_t *temp_arr = malloc(sizeof(entry) * MAX_KEYS +1);
-
+int createTempArr(entry_t * temp_arr, entry_t entry, node *current){
 	// copy current node´s key array unitl id
 	int i_original;
 	int i_copy;
@@ -95,9 +99,21 @@ entry_t * createTempArr(entry_t entry, node *current){
 
 	// print temp array
 	printf("New array: ");
-	for (int i=0; i<MAX_KEYS + 1; i++){ printf("%d ", (temp_arr + i)->key); }
+	for (int i=0; i<MAX_KEYS + 1; i++){ printf("%d ", (temp_arr+i)->key); }
 	printf("\n");
-	return temp_arr;
+	return 0;
+}
+
+
+void free_temp_arr(entry_t * temp_arr){
+    if (temp_arr == NULL){
+        free (temp_arr);
+        return;
+    }
+    for (int i=0; i<=MAX_KEYS; i++){
+        // free entry
+    }
+    free(temp_arr);
 }
 
 
@@ -132,29 +148,36 @@ entry_t insertDefaultValues(table_metadata_t * tb){
 */
 void splitNode(entry_t entry, node *current, node **root){
 	printf("id: %d\n", entry.key);
-	struct entry_t * temp_arr = createTempArr(entry, current);
 	printf("SplitNode\n");
 	printf("%d %d %d\n", current->entries[0].key, current->entries[1].key, current->entries[2].key);
 	// current->entries is full
 	if (current->entries[MAX_KEYS - 1].key != 0){
+        entry_t temp_arr [MAX_KEYS]= {(entry_t){}};
+	    createTempArr(temp_arr, entry, current);
 		// calculate middle id
-		struct entry_t middle_id = *(temp_arr + (MAX_KEYS/2 + 1));
+		int middle_key = (MAX_KEYS/2)+1;
+        entry_t middle_id = current->entries[middle_key];
 		printf("SN Middle id: %d\n", middle_id.key);
 
 		// create two seperate nodes
-		node *new_left = (node *) malloc(sizeof(node));
-		node *new_right = malloc(sizeof(node));
+		node *new_left = &(node){};
+        new_left->entries = (entry_t[MAX_KEYS]){0};
+        new_left->children = (node *[MAX_CHILDREN]){0};
+
+		node *new_right = &(node){};
+        new_right->entries = (entry_t[MAX_KEYS]){0};
+        new_right->children = (node *[MAX_CHILDREN]){0};
 
 		// copy ids to new nodes
 		int k = 0;
 		for (int i=0; i<MAX_KEYS+1; i++){
 			printf("temp arr: %d\n", (temp_arr + i)->key);
-			if ((temp_arr + i)->key < middle_id.key){
-				new_left->entries[i] = *(temp_arr + i);
+			if (temp_arr[i].key < middle_key){
+				new_left->entries[i] = current->entries[i];
 				printf("Left (%d): %d\n", i, new_left->entries[i].key);
 			}
-			else if ((temp_arr + i)->key > middle_id.key) {
-				new_right->entries[k] = *(temp_arr + i);
+			else if (temp_arr[i].key > middle_key) {
+				new_right->entries[k] = current->entries[i];
 				printf("Right (%d): %d\n", k, new_right->entries[k].key);
                 k++;
 			}
@@ -164,7 +187,9 @@ void splitNode(entry_t entry, node *current, node **root){
 		if (current == *root){
 			// create new root with children
 			printf("Splitting root node\n");
-			node * new_root = malloc(sizeof(node));
+			node * new_root = &(node){};
+            new_root->entries = (entry_t[MAX_KEYS]){0};
+            new_root->children = (node *[MAX_CHILDREN]){0};
 
 			// adjust children of children of new root pointers
 			int middle = MAX_CHILDREN / 2;

@@ -24,6 +24,7 @@ void traverse(node * current, table_t * tb);
 node * findValue(int id, node * current);
 int getNodeIndex(node * current, int id);
 int getIndexGreatestValue(node * current);
+void traverse_and_free(node * current, table_t * tb);
 
 
 

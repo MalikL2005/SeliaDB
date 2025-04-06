@@ -25,8 +25,8 @@ typedef struct entry_t {
 
 // Struct that is used as nodes for the tree.
 typedef struct node {
-	entry_t entries [MAX_KEYS];
-	struct node * children [MAX_CHILDREN];
+	entry_t * entries;
+	struct node ** children;
 } node;
 
 

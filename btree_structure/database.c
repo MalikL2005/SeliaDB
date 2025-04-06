@@ -30,13 +30,16 @@ int create_database (database_t * db, table_t ** pTb, char * name, int num_of_ta
 * num_of_columns needs to be passed as extra param (even though included in table_metadata_t)
 * because of the nature of vadriatic functions in C
 */
-int create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t * tb, int num_of_columns, ...){
+int create_entry (entry_t * new_entry, buffer_t * buffer, table_metadata_t * tb, int num_of_columns, ...){
     if (tb->num_of_columns != num_of_columns) {
         printf("warning: returning NULL entry\n");
         return -1;
     }
     void ** vals = malloc(sizeof(int)* tb->num_of_columns);
-    buffer = (buffer_t){malloc(sizeof(float)*num_of_columns), 0, malloc(sizeof(int)*num_of_columns), 0, malloc(sizeof(char *)*num_of_columns), 0};
+    buffer->num_of_pChars = buffer->num_of_floats = buffer->num_of_ints = 0;
+    buffer->float_b = malloc(sizeof(float)*num_of_columns);
+    buffer->char_b = malloc(sizeof(char *)*num_of_columns);
+    buffer->int_b = malloc(sizeof(int)*num_of_columns);
 
     va_list args;
     va_start(args, num_of_columns);
@@ -46,19 +49,19 @@ int create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t * tb, i
         /*printf("%d) %s: %s (%d)\n", i, tb->columns[i]->name, get_type_as_string(tb->columns[i]->type), tb->columns[i]->size);*/
         switch(tb->columns[i]->type){
             case INTEGER:
-                buffer.int_b[buffer.num_of_ints] = va_arg(args, int);
-                vals[i] = &buffer.int_b[buffer.num_of_ints++];
+                buffer->int_b[buffer->num_of_ints] = va_arg(args, int);
+                vals[i] = &buffer->int_b[buffer->num_of_ints++];
                 printf("Got int\n");
                 break;
             case FLOAT:
                 /*buffer_float[num_of_floats] = malloc(sizeof(float));*/
-                buffer.float_b[buffer.num_of_floats] = va_arg(args, double);
-                vals[i] = &buffer.float_b[buffer.num_of_floats++];
+                buffer->float_b[buffer->num_of_floats] = va_arg(args, double);
+                vals[i] = &buffer->float_b[buffer->num_of_floats++];
                 printf("Got float\n");
                 break;
             case VARCHAR:
-                buffer.char_b[buffer.num_of_pChars] = va_arg(args, char *);
-                vals[i] = buffer.char_b[buffer.num_of_pChars++];
+                buffer->char_b[buffer->num_of_pChars] = va_arg(args, char *);
+                vals[i] = buffer->char_b[buffer->num_of_pChars++];
                 printf("Got varchar\n");
                 break;
             case BOOL:
@@ -66,9 +69,6 @@ int create_entry (entry_t * new_entry, buffer_t buffer, table_metadata_t * tb, i
                 break;
             default: 
                 printf("Warning: returning NULL entry for type %s\n", get_type_as_string(tb->columns[i]->type));
-                free(buffer.char_b);
-                free(buffer.float_b);
-                free(buffer.int_b);
                 return -1;
         }
     }
@@ -220,3 +220,90 @@ int add_column (table_t * tb, column_t * new_col){
 }
 
 
+void free_table (table_t * tb){
+    if (tb == NULL){
+        free(tb);
+        tb = NULL;
+        return;
+    }
+    if (tb->metadata == NULL){
+        free (tb->metadata);
+        free (tb->root);
+        free(tb);
+        tb = NULL;
+        return;
+    }
+    if (tb->metadata->columns == NULL){
+        free (tb->metadata->columns);
+        free (tb->metadata);
+        free (tb->root);
+        free(tb);
+        tb = NULL;
+        return;
+    }
+    for (int i=0; i<tb->metadata->num_of_columns; i++){
+        tb->metadata->columns[i] = NULL;
+        free(tb->metadata->columns[i]);
+    }
+    /*free(tb->metadata->columns);*/
+    free (tb->metadata->columns);
+    free(tb->metadata);
+    free(tb->root);
+    tb = NULL;
+    free(tb);
+}
+
+
+
+void free_database (database_t * db){
+    if (db == NULL){
+        db = NULL;
+        free(db);
+        return;
+    }
+    if (db->tables == NULL){
+        free (db->tables);
+        db = NULL;
+        free(db);
+        return;
+    }
+    for (int i=0; i<db->num_of_tables; i++){
+        free_table(db->tables[i]);
+    }
+    free(db->root);
+    free(db->tables);
+    db = NULL;
+    free(db);
+}
+
+
+void free_buffer(buffer_t * bf){
+    if (bf == NULL){
+        free(bf);
+        return;
+    }
+    free(bf->int_b);
+    free(bf->float_b);
+    free(bf->char_b);
+    free(bf);
+    bf = NULL;
+}
+
+
+void free_entry(entry_t * entry, table_t * tb){
+    if (entry == NULL){
+        /*free(entry);*/
+        return;
+    }
+    if (entry->values == NULL){
+        free(entry->values);
+        /*free(entry);*/
+        return;
+    }
+    for (int i=0; i<tb->metadata->num_of_columns; i++){
+        /*free(entry->values[i]);*/
+    }
+    /*free(entry->values);*/
+    /*free (entry);*/
+    entry = NULL;
+}

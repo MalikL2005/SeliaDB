@@ -21,6 +21,7 @@
 #include "delete.h"
 #include "search.h"
 #include "types.h"
+#include <stdlib.h>
 
 
 int main(int argc, char **argv){
@@ -67,7 +68,7 @@ int main(int argc, char **argv){
     table_t * tb = tb1;
     printf("argv[0]: %s\n", argv[1]); // Todo: Add error handling (behaviour is undefined if argv[1] is not numerical)
 	for (int i=1; i<=num_to_insert_to; i++){
-        buffer_t bf = (buffer_t) {};
+        buffer_t * bf = malloc(sizeof(buffer_t));
     /*buffer_t bf = (buffer_t){malloc(sizeof(float)*tb->metadata->num_of_columns), 0, malloc(sizeof(int)*tb->metadata->num_of_columns), 0, malloc(sizeof(char *)*tb->metadata->num_of_columns), 0};*/
         entry_t * buffer_entry = &((entry_t){});
         if (create_entry(buffer_entry, bf, tb->metadata, tb->metadata->num_of_columns, i*100) != 0){
@@ -75,6 +76,8 @@ int main(int argc, char **argv){
             return 1;
         }
 		insert(buffer_entry, tb->root, tb);
+        free_buffer(bf);
+        free(buffer_entry->values);
 	}
 
     printf("Now traversing\n");
@@ -94,9 +97,9 @@ int main(int argc, char **argv){
         printf("Test findings: %d - %d\n", test.key, test.value);
     }
     free(iterations);
+    traverse_and_free(tb->root, tb);
 
-    free(pTb);
-    free(tb1->metadata->columns);
+    free_database(db1);
 
 
     /*display_database(db1);*/
@@ -127,7 +130,8 @@ void traverse(node *current, table_t * tb){
             for (int j=0; j<tb->metadata->num_of_columns; j++){
                 switch(tb->metadata->columns[j]->type){
                     case INTEGER:
-                        printf("-> %d", *(int *)current->entries[i].values[j]);
+                        /*printf("-> %d", *(int *)current->entries[i].values[j]);*/
+                        printf("-> abcd");
                         break;
                     case FLOAT:
                         printf("-> %f", *(float *)current->entries[i].values[j]);
@@ -148,6 +152,45 @@ void traverse(node *current, table_t * tb){
 	}
 }
 
+
+void traverse_and_free(node * current, table_t * tb){
+	if (current == NULL) {
+        free(current);
+        return;
+    }
+	for (int i=0; i<MAX_KEYS; i++) {
+        printf("%d) %d (%d) ", i+1, current->entries[i].key, current->entries[i].value);
+        if (current->entries[i].values != NULL){
+            for (int j=0; j<tb->metadata->num_of_columns; j++){
+                switch(tb->metadata->columns[j]->type){
+                    case INTEGER:
+                        /*printf("-> %d", *(int *)current->entries[i].values[j]);*/
+                        printf("-> abcd");
+                        break;
+                    case FLOAT:
+                        printf("-> %f", *(float *)current->entries[i].values[j]);
+                        break;
+                    case VARCHAR:
+                        printf("-> %s", (char *)current->entries[i].values[j]);
+                        break;
+                    default: printf("-> UNKNOWN TYPE");
+                }
+            }
+        }
+        printf("\n");
+    }
+	printf("\n");
+	for (int i=0; i<MAX_CHILDREN && current->children[i] != NULL; i++){
+        printf("Traversing child no %d\n", i);
+		traverse(current->children[i], tb);
+	}
+    printf("Freeeing allll\n");
+    free(current->children);
+    free(current->entries);
+    for (int i=0; i<MAX_KEYS; i++){
+        free_entry(&current->entries[i], tb);
+    }
+}
 
 
 /*
