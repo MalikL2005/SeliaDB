@@ -82,21 +82,20 @@ int main(int argc, char **argv){
 
     printf("Now traversing\n");
     printf("Hello World\n");
+    printf("Root: %d\n", tb->root->entries[0].key);
 	traverse(tb->root, tb);
     if (tb == NULL) return 1;
     
     // Test for searching by key
     int key = 500;
-    int * iterations = malloc(sizeof(int));
-    *iterations = 0;
-    entry_t test = search_by_key(key, tb->root, iterations);
+    int iterations = 0;
+    entry_t test = search_by_key(key, tb->root, &iterations);
     if (test.key <= 0){
         printf("Key %d not found anywhere.\n", key);
-        printf("Search iterations: %d\n", *iterations);
+        printf("Search iterations: %d\n", iterations);
     } else {
         printf("Test findings: %d - %d\n", test.key, test.value);
     }
-    free(iterations);
     traverse_and_free(tb->root, tb);
 
     free_database(db1);
@@ -181,14 +180,11 @@ void traverse_and_free(node * current, table_t * tb){
     }
 	printf("\n");
 	for (int i=0; i<MAX_CHILDREN && current->children[i] != NULL; i++){
-        printf("Traversing child no %d\n", i);
-		traverse(current->children[i], tb);
+        printf("Freeing child no %d\n", i);
+		traverse_and_free(current->children[i], tb);
 	}
-    printf("Freeeing allll\n");
+    printf("Freeeing %d\n", current->entries[0].key);
     free(current->children);
-    for (int i=0; i<MAX_KEYS; i++){
-        free_entry(&current->entries[i], tb);
-    }
     free(current->entries);
 }
 

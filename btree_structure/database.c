@@ -92,6 +92,7 @@ int create_table (table_t * tb, char * tb_name, int num_of_columns, ...){
     va_list args;
     va_start(args, num_of_columns);
     column_t ** columns = malloc(sizeof(column_t *)*num_of_columns);
+    memset(columns, 0, sizeof(column_t*)*num_of_columns);
     for (int i=0; i<num_of_columns; i++){
         columns[i] = va_arg(args, column_t *);
     }
@@ -99,6 +100,7 @@ int create_table (table_t * tb, char * tb_name, int num_of_columns, ...){
 
     tb->name = tb_name;
     table_metadata_t * metadata = malloc(sizeof(table_metadata_t));
+    memset(metadata, 0, sizeof(table_metadata_t));
     metadata->num_of_columns = num_of_columns;
     metadata->columns = columns;
     metadata->last_index = 1;

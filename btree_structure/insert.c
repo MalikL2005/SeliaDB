@@ -158,30 +158,39 @@ void splitNode(entry_t entry, node *current, node **root){
         entry_t temp_arr [MAX_KEYS]= {(entry_t){}};
 	    createTempArr(temp_arr, entry, current);
 		// calculate middle id
-		int middle_key = (MAX_KEYS/2)+1;
-        entry_t middle_id = current->entries[middle_key];
-		printf("SN Middle id: %d\n", middle_id.key);
+        entry_t middle_entry = current->entries[(MAX_KEYS/2)+1];
+		printf("SN Middle id: %d\n", middle_entry.key);
 
 		// create two seperate nodes
-        node * new_left = &(node){0};
-        new_left->entries = (entry_t[MAX_KEYS]){0};
-        new_left->children = (node *[MAX_CHILDREN]){0};
+        node * new_left = malloc(sizeof(node));
+        memset(new_left, 0, sizeof(node));
+        /*new_left->entries = (entry_t[MAX_KEYS]){0};*/
+        /*new_left->children = (node *[MAX_CHILDREN]){0};*/
+        new_left->entries = malloc(sizeof(entry_t)*MAX_KEYS);
+        memset(new_left->entries, 0, sizeof(entry_t)*MAX_KEYS);
+        new_left->children = malloc(sizeof(node*)*MAX_CHILDREN);
+        memset(new_left->children, 0, sizeof(node*)*MAX_CHILDREN);
 
-        node * new_right = &(node){0};
-        new_right->entries = (entry_t[MAX_KEYS]){0};
-        new_right->children = (node *[MAX_CHILDREN]){0};
+        node * new_right = malloc(sizeof(node));
+        memset(new_right, 0, sizeof(node));
+        new_right->entries = malloc(sizeof(entry_t)*MAX_KEYS);
+        memset(new_right->entries, 0, sizeof(entry_t)*MAX_KEYS);
+        new_right->children = malloc(sizeof(node*)*MAX_CHILDREN);
+        memset(new_right->children, 0, sizeof(node*)*MAX_CHILDREN);
 
 		// copy ids to new nodes
 		int k = 0;
+        printf("\nmiddle: %d\n", middle_entry.key);
 		for (int i=0; i<MAX_KEYS+1; i++){
 			printf("temp arr: %d\n", (temp_arr + i)->key);
-			if (temp_arr[i].key < middle_key){
+			if (temp_arr[i].key < middle_entry.key){
 				new_left->entries[i] = current->entries[i];
+                memset(&current->entries[i], 0, sizeof(entry_t));
 				printf("Left (%d): %d\n", i, new_left->entries[i].key);
 			}
-			else if (temp_arr[i].key > middle_key) {
+			else if (temp_arr[i].key > middle_entry.key) {
 				new_right->entries[k] = current->entries[i];
-				printf("Right (%d): %d\n", k, new_right->entries[k].key);
+				printf("Right(%d): %d\n", k, new_right->entries[k].key);
                 k++;
 			}
 		}
@@ -190,9 +199,12 @@ void splitNode(entry_t entry, node *current, node **root){
 		if (current == *root){
 			// create new root with children
 			printf("Splitting root node\n");
-			node * new_root = &(node){};
-            new_root->entries = (entry_t[MAX_KEYS]){0};
-            new_root->children = (node *[MAX_CHILDREN]){0};
+			node * new_root = malloc(sizeof(node));
+            memset(new_root, 0, sizeof(node));
+            new_root->entries = malloc(sizeof(entry_t)* MAX_KEYS);
+            memset(new_root->entries, 0, sizeof(entry_t)*MAX_KEYS);
+            new_root->children = malloc(sizeof(node *)*MAX_CHILDREN);
+            memset(new_root->entries, 0, sizeof(node *)*MAX_CHILDREN);
 
 			// adjust children of children of new root pointers
 			int middle = MAX_CHILDREN / 2;
@@ -211,12 +223,19 @@ void splitNode(entry_t entry, node *current, node **root){
                 printf("%d ", new_right->entries[i].key);
             }
             printf("\n");
+            printf("Printing left child: \n");
+            for (int i=0; i<MAX_KEYS; i++){
+                printf("%d ", new_left->entries[i].key);
+            }
+            printf("\n");
 
-			new_root->entries[0] = middle_id;
-			new_root->children[0] = new_left;
-			new_root->children[1] = new_right;
 			*root = new_root;
+			(*root)->entries[0] = middle_entry;
+			(*root)->children[0] = new_left;
+			(*root)->children[1] = new_right;
             printf("New root: %d\n", (*root)->entries[0].key);
+            printf("Left: %d\n", (*root)->children[0]->entries[0].key);
+            printf("Right: %d\n", (*root)->children[0]->entries[0].key);
 
 		} else {
 			// adjust children of parent node
@@ -256,12 +275,12 @@ void splitNode(entry_t entry, node *current, node **root){
 				parent->children[child_index] = new_left;
 				parent->children[child_index + 1] = new_right;
                 printf("parent: %d\n", parent->entries[0].key);
-                printf("Middle: %d\n", middle_id.key);
+                printf("Middle: %d\n", middle_entry.key);
                 /*printf("New left: %d\n", root->children[child_index]->entries[0].key);*/
                 /*printf("New right: %d\n", root->children[child_index+1]->entries[0].key);*/
 				printf("SplitNode parent\n");
                 // recursive call to split the parent or to insert middle_id if it's not full
-                splitNode(middle_id, parent, root);
+                splitNode(middle_entry, parent, root);
 			}
 		}
 	}
