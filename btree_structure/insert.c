@@ -32,9 +32,11 @@ int insert(entry_t * entry, node *current, table_t * tb){
 	}
     if (current->children == NULL){
         tb->root->children = malloc(sizeof(node *) * MAX_CHILDREN);
+        memset(tb->root->children, 0, MAX_CHILDREN*sizeof(node*));
     }
     if (current->entries == NULL){
         tb->root->entries = malloc(sizeof(entry_t) * MAX_KEYS);
+        memset(tb->root->entries, 0, MAX_KEYS * sizeof(entry_t));
     }
 	// node is leaf and is not full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key == 0){
@@ -45,6 +47,7 @@ int insert(entry_t * entry, node *current, table_t * tb){
 	// node is leaf and is full
 	if (current->children[0] == NULL && current->entries[MAX_KEYS - 1].key != 0){
 		splitNode(*entry, current, &tb->root);
+        free(current);
 		return 0;
 	}
 
@@ -160,11 +163,11 @@ void splitNode(entry_t entry, node *current, node **root){
 		printf("SN Middle id: %d\n", middle_id.key);
 
 		// create two seperate nodes
-		node *new_left = &(node){};
+        node * new_left = &(node){0};
         new_left->entries = (entry_t[MAX_KEYS]){0};
         new_left->children = (node *[MAX_CHILDREN]){0};
 
-		node *new_right = &(node){};
+        node * new_right = &(node){0};
         new_right->entries = (entry_t[MAX_KEYS]){0};
         new_right->children = (node *[MAX_CHILDREN]){0};
 

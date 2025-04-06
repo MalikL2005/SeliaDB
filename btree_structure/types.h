@@ -6,6 +6,8 @@
 #define MIN_KEYS 4 // MIN_KEYS = MIN_CHILDREN - 1
 #define MAX_KEYS 9 // MAX_KEYS = 2 * MIN_CHILDREN - 1
 
+#define MAX_TABLES
+#define MAX_COLUMNS
 
 
 

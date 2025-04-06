@@ -103,6 +103,7 @@ int create_table (table_t * tb, char * tb_name, int num_of_columns, ...){
     metadata->last_index = 1;
     tb->metadata = metadata;
     tb->root = malloc(sizeof(node));
+    memset(tb->root, 0, sizeof(node));
     return 0;
 }
 
