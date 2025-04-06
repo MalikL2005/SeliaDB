@@ -292,7 +292,7 @@ void insertToNode(entry_t entry, node *current){
     struct node * save_children[10];
     memcpy(save_children, current->children, sizeof(current->children));
 	// shift array to right
-	for (int j=MAX_KEYS; j>placeToInsert; j--){
+	for (int j=MAX_KEYS-1; j>placeToInsert; j--){
 		current->entries[j] = current->entries[j-1];
 	}
     memcpy(current->children, save_children, sizeof(current->children));

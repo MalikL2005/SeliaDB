@@ -35,7 +35,8 @@ int create_entry (entry_t * new_entry, buffer_t * buffer, table_metadata_t * tb,
         printf("warning: returning NULL entry\n");
         return -1;
     }
-    void ** vals = malloc(sizeof(int)* tb->num_of_columns);
+    void ** vals = malloc(sizeof(int*)*num_of_columns);
+    memset(vals, 0, sizeof(int)*tb->num_of_columns);
     buffer->num_of_pChars = buffer->num_of_floats = buffer->num_of_ints = 0;
     buffer->float_b = malloc(sizeof(float)*num_of_columns);
     buffer->char_b = malloc(sizeof(char *)*num_of_columns);

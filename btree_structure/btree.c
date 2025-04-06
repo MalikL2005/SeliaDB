@@ -186,10 +186,10 @@ void traverse_and_free(node * current, table_t * tb){
 	}
     printf("Freeeing allll\n");
     free(current->children);
-    free(current->entries);
     for (int i=0; i<MAX_KEYS; i++){
         free_entry(&current->entries[i], tb);
     }
+    free(current->entries);
 }
 
 
