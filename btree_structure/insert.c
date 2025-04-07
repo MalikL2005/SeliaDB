@@ -26,13 +26,15 @@ int insert(entry_t * entry, node *current, table_t * tb){
 	if (tb->root == NULL){
 		printf("Root is null\n");
 		tb->root = malloc(sizeof(node));
+        memset(tb->root, 0, sizeof(node));
         tb->root->entries = malloc(sizeof(entry_t)*MAX_KEYS);
+        memset(tb->root->entries, 0, sizeof(entry_t)*MAX_KEYS);
 		tb->root->entries[0] = *entry;
 		return 0;
 	}
     if (current->children == NULL){
         tb->root->children = malloc(sizeof(node *) * MAX_CHILDREN);
-        memset(tb->root->children, 0, MAX_CHILDREN*sizeof(node*));
+        memset(tb->root->children, 0, sizeof(node*)* MAX_CHILDREN);
     }
     if (current->entries == NULL){
         tb->root->entries = malloc(sizeof(entry_t) * MAX_KEYS);
@@ -204,16 +206,18 @@ void splitNode(entry_t entry, node *current, node **root){
             new_root->entries = malloc(sizeof(entry_t)* MAX_KEYS);
             memset(new_root->entries, 0, sizeof(entry_t)*MAX_KEYS);
             new_root->children = malloc(sizeof(node *)*MAX_CHILDREN);
-            memset(new_root->entries, 0, sizeof(node *)*MAX_CHILDREN);
+            memset(new_root->children, 0, sizeof(node *)*MAX_CHILDREN);
 
 			// adjust children of children of new root pointers
 			int middle = MAX_CHILDREN / 2;
 			int right = 0;
-			for (int i=0; i<MAX_CHILDREN + 1; i++){
+			for (int i=0; i<MAX_CHILDREN; i++){
 				if (i <= middle){
 					new_left->children[i] = (*root)->children[i];
+                    printf("Left: %d\n", i);
 				} else {
 					new_right->children[right] = (*root)->children[i];
+                    printf("Right: %d\n", right);
 					right ++;
 				}
 			}
