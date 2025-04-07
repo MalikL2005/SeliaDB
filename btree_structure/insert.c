@@ -229,6 +229,8 @@ void splitNode(entry_t entry, node *current, node **root){
             }
             printf("\n");
 
+            free((*root)->entries);
+            free((*root)->children);
 			*root = new_root;
 			(*root)->entries[0] = middle_entry;
 			(*root)->children[0] = new_left;
