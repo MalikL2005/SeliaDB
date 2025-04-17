@@ -252,7 +252,10 @@ void free_table (table_t * tb){
     /*free(tb->metadata->columns);*/
     free (tb->metadata->columns);
     free(tb->metadata);
-    free(tb->root);
+    if (tb->root != NULL){
+        free(tb->root);
+        tb->root = NULL;
+    }
     tb = NULL;
     free(tb);
 }

@@ -69,8 +69,9 @@ int main(int argc, char **argv){
     printf("argv[0]: %s\n", argv[1]); // Todo: Add error handling (behaviour is undefined if argv[1] is not numerical)
 	for (int i=1; i<=num_to_insert_to; i++){
         buffer_t * bf = malloc(sizeof(buffer_t));
-    /*buffer_t bf = (buffer_t){malloc(sizeof(float)*tb->metadata->num_of_columns), 0, malloc(sizeof(int)*tb->metadata->num_of_columns), 0, malloc(sizeof(char *)*tb->metadata->num_of_columns), 0};*/
         entry_t * buffer_entry = &((entry_t){});
+        // entry_t * buffer_entry = malloc(sizeof(entry_t));
+        // memset(buffer_entry, 0, sizeof(buffer_entry));
         if (create_entry(buffer_entry, bf, tb->metadata, tb->metadata->num_of_columns, i*100) != 0){
             printf("Failed to get entry\n");
             return 1;
@@ -78,6 +79,7 @@ int main(int argc, char **argv){
 		insert(buffer_entry, tb->root, tb);
         free_buffer(bf);
         free(buffer_entry->values);
+        // free(buffer_entry);
 	}
 
     printf("Now traversing\n");
@@ -146,7 +148,7 @@ void traverse(node *current, table_t * tb){
     }
 	printf("\n");
 	for (int i=0; i<MAX_CHILDREN && current->children[i] != NULL; i++){
-        printf("Traversing child no %d\n", i);
+        printf("Traversing child no %d\n", i+1);
 		traverse(current->children[i], tb);
 	}
 }
@@ -180,7 +182,7 @@ void traverse_and_free(node * current, table_t * tb){
     }
 	printf("\n");
 	for (int i=0; i<MAX_CHILDREN && current->children[i] != NULL; i++){
-        printf("Freeing child no %d\n", i);
+        printf("Freeing child no %d\n", i+1);
 		traverse_and_free(current->children[i], tb);
 	}
     printf("Freeeing %d\n", current->entries[0].key);
@@ -188,7 +190,10 @@ void traverse_and_free(node * current, table_t * tb){
         free(current->children[i]);
     }
     free(current->children);
+    current->children = NULL;
     free(current->entries);
+    current->entries = NULL;
+    current = NULL;
     free(current);
 }
 

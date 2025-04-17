@@ -166,8 +166,6 @@ void splitNode(entry_t entry, node *current, node **root){
 		// create two seperate nodes
         node * new_left = malloc(sizeof(node));
         memset(new_left, 0, sizeof(node));
-        /*new_left->entries = (entry_t[MAX_KEYS]){0};*/
-        /*new_left->children = (node *[MAX_CHILDREN]){0};*/
         new_left->entries = malloc(sizeof(entry_t)*MAX_KEYS);
         memset(new_left->entries, 0, sizeof(entry_t)*MAX_KEYS);
         new_left->children = malloc(sizeof(node*)*MAX_CHILDREN);
@@ -179,6 +177,8 @@ void splitNode(entry_t entry, node *current, node **root){
         memset(new_right->entries, 0, sizeof(entry_t)*MAX_KEYS);
         new_right->children = malloc(sizeof(node*)*MAX_CHILDREN);
         memset(new_right->children, 0, sizeof(node*)*MAX_CHILDREN);
+        printf("alloced nr %X\n", new_right->children);
+        printf("alloced nr %X\n", new_right->entries);
 
 		// copy ids to new nodes
 		int k = 0;
@@ -261,7 +261,7 @@ void splitNode(entry_t entry, node *current, node **root){
 			// Adjust new_left's and new_right's children pointer
 			int middle = MAX_CHILDREN / 2;
 			int right = 0;
-			for (int i=0; i<MAX_CHILDREN + 1; i++){
+			for (int i=0; i<MAX_CHILDREN; i++){
 				if (i <= middle){
 					new_left->children[i] = current->children[i];
 				} else {
@@ -274,7 +274,7 @@ void splitNode(entry_t entry, node *current, node **root){
 			// insert pointer to new_left and new_right
 			if (child_index < MAX_CHILDREN){
 				// shift children-array to right 
-				for (int i=MAX_CHILDREN; i>child_index; i--){
+				for (int i=MAX_CHILDREN-1; i>child_index; i--){
 					parent->children[i] = parent->children[i-1];
 				}
 				// adjust parent to children pointer
